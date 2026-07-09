@@ -16,6 +16,14 @@ import {
   checkChatProviderReadiness,
   classifyProviderError,
 } from '../lib/providers/provider-errors';
+import {
+  NAV_PANEL_WIDTH_KEY,
+  SETTINGS_SIDEBAR_WIDTH_KEY,
+  clampNavPanelWidth,
+  clampSettingsSidebarWidth,
+  persistPanelWidth,
+  readStoredPanelWidth,
+} from '../lib/panel-width';
 
 export interface ProviderModelsRefreshResult {
   success: boolean;
@@ -141,6 +149,14 @@ interface StoreState {
   settingsOpen: boolean;
   setSettingsOpen: (open: boolean) => void;
 
+  settingsSidebarWidth: number;
+  settingsSidebarResizing: boolean;
+  navPanelWidth: number;
+  setSettingsSidebarWidth: (width: number) => void;
+  setSettingsSidebarResizing: (resizing: boolean) => void;
+  setNavPanelWidth: (width: number) => void;
+  recalcPanelWidths: () => void;
+
   // Modes & Navigation
   activeMode: AppMode;
   setActiveMode: (mode: AppMode) => void;
@@ -235,6 +251,45 @@ export const useStore = create<StoreState>((set, get) => ({
         ? { settingsOpen: true, sidebarOpen: false, sidebarOpenedByHover: false }
         : { settingsOpen: false },
     ),
+
+  settingsSidebarWidth: readStoredPanelWidth(SETTINGS_SIDEBAR_WIDTH_KEY, (w) =>
+    clampSettingsSidebarWidth(w),
+  ),
+  settingsSidebarResizing: false,
+  navPanelWidth: readStoredPanelWidth(NAV_PANEL_WIDTH_KEY, (w) => clampNavPanelWidth(w)),
+  setSettingsSidebarResizing: (settingsSidebarResizing) => set({ settingsSidebarResizing }),
+  setSettingsSidebarWidth: (width) => {
+    const state = get();
+    const clamped = clampSettingsSidebarWidth(width, {
+      navPanelOpen: state.settingsOpen,
+      navPanelWidth: state.navPanelWidth,
+    });
+    persistPanelWidth(SETTINGS_SIDEBAR_WIDTH_KEY, clamped);
+    set({ settingsSidebarWidth: clamped });
+  },
+  setNavPanelWidth: (width) => {
+    const state = get();
+    const clamped = clampNavPanelWidth(width, {
+      settingsSidebarOpen: state.sidebarOpen,
+      settingsSidebarWidth: state.settingsSidebarWidth,
+    });
+    persistPanelWidth(NAV_PANEL_WIDTH_KEY, clamped);
+    set({ navPanelWidth: clamped });
+  },
+  recalcPanelWidths: () => {
+    const state = get();
+    const settingsSidebarWidth = clampSettingsSidebarWidth(state.settingsSidebarWidth, {
+      navPanelOpen: state.settingsOpen,
+      navPanelWidth: state.navPanelWidth,
+    });
+    const navPanelWidth = clampNavPanelWidth(state.navPanelWidth, {
+      settingsSidebarOpen: state.sidebarOpen,
+      settingsSidebarWidth: state.settingsSidebarWidth,
+    });
+    persistPanelWidth(SETTINGS_SIDEBAR_WIDTH_KEY, settingsSidebarWidth);
+    persistPanelWidth(NAV_PANEL_WIDTH_KEY, navPanelWidth);
+    set({ settingsSidebarWidth, navPanelWidth });
+  },
 
   // Mode & navigation
   activeMode: 'pages',

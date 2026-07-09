@@ -6,8 +6,8 @@
 import React, { useState } from 'react';
 import { Sparkles, CornerDownRight, PlusCircle } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import SettingsBall from '../chat/SettingsBall';
-import SettingsPanel from './SettingsPanel';
+import NavPanelToggle from '../chat/NavPanelToggle';
+import NavigationPanel from './NavigationPanel';
 import PagesView from '../../views/PagesView';
 import VersusView from '../../views/VersusView';
 import MetricsView from '../../views/MetricsView';
@@ -109,7 +109,7 @@ export default function ChatShell() {
                 ))}
               </div>
 
-              <SettingsBall />
+              <NavPanelToggle />
             </div>
 
             <div className="flex-1 flex flex-col justify-start min-h-0 py-4 overflow-y-auto">
@@ -190,12 +190,12 @@ export default function ChatShell() {
 
               <div className="flex justify-between items-center text-[9px] text-white/30 font-mono tracking-wider">
                 <span>LOCAL CACHE: READY (PROMPTS: {prompts.length})</span>
-                <span>CTRL+B TO TOGGLE PANEL</span>
+                <span>{t.toggleSettingsShortcut}</span>
               </div>
             </div>
           </div>
 
-          <SettingsPanel />
+          <NavigationPanel />
         </div>
       </div>
 

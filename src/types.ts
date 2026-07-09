@@ -185,8 +185,11 @@ export interface Translations {
     clear: string;
     reset: string;
     enabled: string;
+    off: string;
+    on: string;
     online: string;
     disconnected: string;
+    noModelSelected: string;
     modelsAvailable: string;
     noModels: string;
     manualList: string;
