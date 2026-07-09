@@ -59,22 +59,26 @@ export default function FloatingSidebar() {
     <aside
       id="floating-sidebar"
       style={{ width: settingsSidebarWidth }}
-      className={`fixed top-3 bottom-3 left-0 z-40 flex flex-col min-h-0 min-w-0 overflow-hidden rounded-r-2xl border border-white/10 border-l-0 bg-[#0a0a0c]/90 backdrop-blur-2xl shadow-[0_12px_48px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.05)] transform ${widthTransitionClass} ${
+      className={`fixed top-3 bottom-3 left-0 z-40 transform ${widthTransitionClass} ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full pointer-events-none'
       }`}
     >
-      <div {...resizeHandleProps}>
-        <div className={lineClassName} />
-      </div>
+      <div className="rgb-border-sidebar rgb-border-glow h-full w-full">
+        <div className="rgb-border-sidebar-inner">
+          <div {...resizeHandleProps}>
+            <div className={lineClassName} />
+          </div>
 
-      <div className="flex min-w-0 shrink-0 items-center border-t border-b border-white/10 bg-white/[0.03] px-5 pb-4 pt-5">
-        <h2 className="font-display font-semibold text-slate-100 flex items-center gap-2 truncate min-w-0">
-          <Settings className="w-4 h-4 text-fuchsia-400 shrink-0" />
-          {t.settings}
-        </h2>
-      </div>
+          <div className="flex min-w-0 shrink-0 items-center border-t border-b border-white/10 bg-white/[0.03] px-5 pb-4 pt-5">
+            <h2 className="font-display font-semibold text-slate-100 flex items-center gap-2 truncate min-w-0">
+              <Settings className="w-4 h-4 text-fuchsia-400 shrink-0" />
+              {t.settings}
+            </h2>
+          </div>
 
-      <SettingsSidebarContent />
+          <SettingsSidebarContent />
+        </div>
+      </div>
     </aside>
   );
 }

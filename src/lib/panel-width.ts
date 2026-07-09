@@ -9,6 +9,8 @@ export const MIN_PANEL_WIDTH = PANEL_BASE_WIDTH * 0.75;
 export const MAX_NAV_PANEL_WIDTH = PANEL_BASE_WIDTH * 1.25;
 export const MAX_SETTINGS_SIDEBAR_WIDTH = PANEL_BASE_WIDTH * 2;
 
+export const SETTINGS_SIDEBAR_CHAT_GAP_PX = 16;
+
 export const NAV_PANEL_WIDTH_KEY = 'xyz-prompt-nav-panel-width';
 export const SETTINGS_SIDEBAR_WIDTH_KEY = 'xyz-prompt-settings-sidebar-width';
 
@@ -34,7 +36,7 @@ export function clampNavPanelWidth(
 ): number {
   const reservedLeft =
     options?.settingsSidebarOpen && options.settingsSidebarWidth
-      ? options.settingsSidebarWidth
+      ? options.settingsSidebarWidth + SETTINGS_SIDEBAR_CHAT_GAP_PX
       : 0;
   const maxFromViewport = maxWidthFromViewport(reservedLeft);
   const maxViewportCap = viewportWidth() * 0.85;

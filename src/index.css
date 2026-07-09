@@ -83,6 +83,32 @@
   z-index: 1;
 }
 
+/* Floating settings sidebar — RGB border, rounded on the right edge only */
+.rgb-border-sidebar {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 1rem 1rem 0;
+  padding: 2px;
+  padding-left: 0;
+  background-image: linear-gradient(to bottom right, #84cc16, #a855f7, #22d3ee);
+  box-shadow: 0 0 50px -12px rgba(132, 204, 22, 0.35);
+}
+
+.rgb-border-sidebar-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background-color: rgba(10, 10, 12, 0.92);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border-radius: 0 calc(1rem - 2px) calc(1rem - 2px) 0;
+}
+
 /* Dark glass effects */
 .glass-panel {
   background: rgba(255, 255, 255, 0.03);

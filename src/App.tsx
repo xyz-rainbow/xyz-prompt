@@ -8,6 +8,7 @@ import { useStore } from './store/useStore';
 import FloatingSidebar from './components/layout/FloatingSidebar';
 import MenuBall from './components/layout/MenuBall';
 import ChatShell from './components/layout/ChatShell';
+import { SETTINGS_SIDEBAR_CHAT_GAP_PX } from './lib/panel-width';
 
 const EDGE_OPEN_PX = 15;
 const CLOSE_MARGIN_PX = 24;
@@ -84,7 +85,8 @@ export default function App() {
         return;
       }
 
-      const inSidebarZone = e.clientX <= settingsSidebarWidth + CLOSE_MARGIN_PX;
+      const inSidebarZone =
+        e.clientX <= settingsSidebarWidth + SETTINGS_SIDEBAR_CHAT_GAP_PX + CLOSE_MARGIN_PX;
       if (inSidebarZone) {
         clearCloseTimer();
         return;
@@ -128,7 +130,11 @@ export default function App() {
 
       <main
         id="app-main-content"
-        style={sidebarOpen && isMdUp ? { paddingLeft: settingsSidebarWidth } : undefined}
+        style={
+          sidebarOpen && isMdUp
+            ? { paddingLeft: settingsSidebarWidth + SETTINGS_SIDEBAR_CHAT_GAP_PX }
+            : undefined
+        }
         className={`flex-grow min-h-dvh min-w-0 flex flex-col items-center px-4 sm:px-6 md:px-10 py-6 relative z-10 ${
           sidebarOpen ? 'pointer-events-none' : ''
         } ${

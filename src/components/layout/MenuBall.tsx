@@ -6,6 +6,7 @@
 import React from 'react';
 import { Menu, ChevronLeft } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { SETTINGS_SIDEBAR_CHAT_GAP_PX } from '../../lib/panel-width';
 
 const RGB_BORDER =
   'p-[2px] bg-gradient-to-br from-lime-500 via-purple-500 to-cyan-400 shadow-[0_0_24px_-6px_rgba(132,204,22,0.45)]';
@@ -30,7 +31,11 @@ export default function MenuBall() {
       type="button"
       onClick={toggleSidebar}
       title={t.settings}
-      style={sidebarOpen ? { left: settingsSidebarWidth } : undefined}
+      style={
+        sidebarOpen
+          ? { left: settingsSidebarWidth + SETTINGS_SIDEBAR_CHAT_GAP_PX / 2 }
+          : undefined
+      }
       className={`fixed top-1/2 -translate-y-1/2 z-[65] flex items-center justify-center rounded-full cursor-pointer active:scale-95 ${settingsSidebarResizing ? MENU_BALL_TRANSITION.resizing : MENU_BALL_TRANSITION.idle} ${RGB_BORDER} ${
         sidebarOpen ? '-translate-x-1/2 w-8 h-8' : 'left-4 w-12 h-12'
       }`}
