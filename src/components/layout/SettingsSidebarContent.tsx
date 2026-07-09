@@ -46,7 +46,7 @@ export default function SettingsSidebarContent() {
         <AiProvidersSection />
       </div>
 
-      <div className="shrink-0 px-5 py-4 border-t border-white/5 min-w-0 w-full">
+      <div className="w-full min-w-0 shrink-0 border-t border-b border-white/10 bg-white/[0.03] px-5 py-4">
         <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 space-y-2">
           <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
             <span>Database Engine</span>
