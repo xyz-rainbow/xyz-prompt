@@ -187,13 +187,13 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
 
   return (
     <div
-      className={`flex flex-col gap-2 rounded-xl border bg-white/[0.02] p-2.5 transition-colors ${
+      className={`flex flex-col gap-1.5 rounded-lg border bg-white/[0.02] p-2 transition-colors ${
         expanded ? 'border-white/15' : 'border-white/10'
       }`}
     >
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] grid-rows-3 gap-x-2.5 gap-y-0.5 items-center">
         <div className="row-span-3 flex items-center justify-center self-center">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-lime-500/10 text-xs font-bold text-lime-400 border border-lime-500/20">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-lime-500/10 text-[11px] font-bold text-lime-400 border border-lime-500/20">
             {profile.label.slice(0, 2).toUpperCase()}
           </span>
         </div>

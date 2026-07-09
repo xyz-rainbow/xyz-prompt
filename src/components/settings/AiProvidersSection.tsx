@@ -17,7 +17,7 @@ export default function AiProvidersSection() {
   const custom = providers.filter((p) => !p.builtin);
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <div className="space-y-1">
         <h4 className="text-[10px] font-mono font-semibold tracking-widest text-slate-500 uppercase flex items-center gap-1.5">
           <Cpu className="w-3.5 h-3.5 text-lime-400" />
@@ -26,7 +26,7 @@ export default function AiProvidersSection() {
         <p className="text-[10px] text-slate-500 leading-relaxed">{t.providers.subtitle}</p>
       </div>
 
-      <div className="space-y-2 max-h-[42vh] overflow-y-auto pr-1 custom-scrollbar">
+      <div className="space-y-1.5 max-h-[42vh] overflow-y-auto custom-scrollbar">
         {builtin.map((p) => (
           <div key={p.id}>
             <ProviderConfigCard profile={p} />
