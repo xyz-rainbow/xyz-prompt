@@ -10,6 +10,7 @@ export const en: Translations = {
   subtitle: "Optimize, compare, and analyze your generative prompts with precision",
   menu: "Menu",
   settings: "Settings",
+  toggleSettingsShortcut: "CTRL+B TO TOGGLE SETTINGS",
   modes: {
     pages: "Pages",
     versus: "Versus (A/B)",
@@ -21,12 +22,12 @@ export const en: Translations = {
     addPrompt: "Add New Prompt",
     totalPrompts: "Total Prompts",
     allRightsReserved: "All rights reserved",
-    shortcutInfo: "Press Ctrl+B to toggle Sidebar",
+    shortcutInfo: "Press Ctrl+B to open Settings (AI providers, prompt list)",
     quickStats: "Local Database"
   },
   pagesMode: {
     noPrompts: "No prompts in database yet",
-    noPromptsDesc: "Click 'Add New Prompt' in the sidebar or right settings panel to get started! Supports .txt, .md, .json, .csv, and Word (.docx) files.",
+    noPromptsDesc: "Click 'Add New Prompt' in the navigation panel or settings sidebar to get started! Supports .txt, .md, .json, .csv, and Word (.docx) files.",
     promptNum: "Prompt #{{num}}",
     selectPrompt: "Select this prompt to add feedback",
     selected: "Prompt Selected",
@@ -124,6 +125,8 @@ export const en: Translations = {
     activeModel: "Active model",
     refreshModels: "Refresh models",
     refreshingModels: "Refreshing models...",
+    expandDetails: "Show provider details",
+    collapseDetails: "Hide provider details",
     modelsFetched: "{{count}} models loaded from provider",
     modelsFetchFailed: "Could not load models",
     selectModelPlaceholder: "No models — refresh or edit list",
@@ -141,6 +144,7 @@ export const es: Translations = {
   subtitle: "Optimiza, compara y analiza tus prompts generativos con precisión",
   menu: "Menú",
   settings: "Ajustes",
+  toggleSettingsShortcut: "CTRL+B PARA AJUSTES",
   modes: {
     pages: "Páginas",
     versus: "Versus (A/B)",
@@ -152,12 +156,12 @@ export const es: Translations = {
     addPrompt: "Añadir Nuevo Prompt",
     totalPrompts: "Prompts Totales",
     allRightsReserved: "Todos los derechos reservados",
-    shortcutInfo: "Presiona Ctrl+B para ocultar/mostrar",
+    shortcutInfo: "Presiona Ctrl+B para abrir Ajustes (proveedores IA, lista de prompts)",
     quickStats: "Base de Datos Local"
   },
   pagesMode: {
     noPrompts: "No hay prompts en la base de datos todavía",
-    noPromptsDesc: "Haz clic en 'Añadir Nuevo Prompt' en el panel lateral o en el de Ajustes para empezar. Sostiene archivos .txt, .md, .json, .csv y Word (.docx).",
+    noPromptsDesc: "Haz clic en 'Añadir Nuevo Prompt' en el panel de navegación o en el sidebar de Ajustes para empezar. Soporta archivos .txt, .md, .json, .csv y Word (.docx).",
     promptNum: "Prompt #{{num}}",
     selectPrompt: "Seleccionar este prompt para añadir feedback",
     selected: "Prompt Seleccionado",
@@ -255,6 +259,8 @@ export const es: Translations = {
     activeModel: "Modelo activo",
     refreshModels: "Refrescar modelos",
     refreshingModels: "Refrescando modelos...",
+    expandDetails: "Ver detalles del proveedor",
+    collapseDetails: "Ocultar detalles del proveedor",
     modelsFetched: "{{count}} modelos cargados del proveedor",
     modelsFetchFailed: "No se pudieron cargar los modelos",
     selectModelPlaceholder: "Sin modelos — refrescar o editar lista",

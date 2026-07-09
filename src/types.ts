@@ -84,6 +84,7 @@ export interface Translations {
   subtitle: string;
   menu: string;
   settings: string;
+  toggleSettingsShortcut: string;
   modes: {
     pages: string;
     versus: string;
@@ -198,6 +199,8 @@ export interface Translations {
     activeModel: string;
     refreshModels: string;
     refreshingModels: string;
+    expandDetails: string;
+    collapseDetails: string;
     modelsFetched: string;
     modelsFetchFailed: string;
     selectModelPlaceholder: string;
