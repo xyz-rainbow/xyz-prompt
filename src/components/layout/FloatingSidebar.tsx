@@ -4,9 +4,10 @@
  */
 
 import React, { useState } from 'react';
-import { Database, PlusCircle, Trash2, Globe, Sparkles, DatabaseZap } from 'lucide-react';
+import { Database, PlusCircle, Trash2, Globe, DatabaseZap } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import AddPromptPopup from '../prompts/AddPromptPopup';
+import BrandMark from './BrandMark';
 
 export default function FloatingSidebar() {
   const sidebarOpen = useStore((state) => state.sidebarOpen);
@@ -43,13 +44,8 @@ export default function FloatingSidebar() {
       >
         {/* Top Header */}
         <div className="p-5 border-b border-white/5 bg-white/[0.02]">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-indigo-400 shrink-0" />
-              {t.sidebar.title}
-            </h2>
-          </div>
-          <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+          <BrandMark size="md" showSubtitle />
+          <p className="text-xs text-slate-400 mt-3 leading-relaxed">
             {t.sidebar.description}
           </p>
         </div>
