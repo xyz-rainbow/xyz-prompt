@@ -12,6 +12,8 @@ export const en: Translations = {
   settings: "Settings",
   toggleSettingsShortcut: "CTRL+B TO TOGGLE SETTINGS",
   modes: {
+    dashboard: "Dashboard",
+    control: "Control",
     pages: "Pages",
     versus: "Versus (A/B)",
     metrics: "Metrics Grid"
@@ -149,6 +151,8 @@ export const es: Translations = {
   settings: "Ajustes",
   toggleSettingsShortcut: "CTRL+B PARA AJUSTES",
   modes: {
+    dashboard: "Dashboard",
+    control: "Control",
     pages: "Páginas",
     versus: "Versus (A/B)",
     metrics: "Métrica Grid"

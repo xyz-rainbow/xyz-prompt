@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, X, AlertCircle, Clipboard } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Prompt } from '../../types';
@@ -15,6 +16,7 @@ interface EditPromptPopupProps {
 
 export default function EditPromptPopup({ prompt, onClose }: EditPromptPopupProps) {
   const t = useStore((state) => state.t());
+  const language = useStore((state) => state.language);
   const updatePrompt = useStore((state) => state.updatePrompt);
 
   const [title, setTitle] = useState(prompt.title);
@@ -22,6 +24,24 @@ export default function EditPromptPopup({ prompt, onClose }: EditPromptPopupProp
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !loading) onCloseRef.current();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [loading]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +58,8 @@ export default function EditPromptPopup({ prompt, onClose }: EditPromptPopupProp
       setTimeout(() => {
         onClose();
       }, 1000);
-    } catch (err) {
-      setError(t.language === 'es' ? 'Error al actualizar el prompt' : 'Failed to update the prompt');
+    } catch {
+      setError(language === 'es' ? 'Error al actualizar el prompt' : 'Failed to update the prompt');
     } finally {
       setLoading(false);
     }
@@ -58,105 +78,126 @@ export default function EditPromptPopup({ prompt, onClose }: EditPromptPopupProp
       } else {
         setError(t.addPrompt.clipboardError);
       }
-    } catch (err) {
+    } catch {
       setError(t.addPrompt.clipboardError);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#020203]/70 backdrop-blur-md animate-fade-in">
-      <div 
+  const modalTitle = language === 'es' ? 'Editar Prompt' : 'Edit Prompt';
+  const successMessage =
+    language === 'es' ? 'Prompt actualizado con éxito' : 'Prompt updated successfully!';
+  const updateLabel = language === 'es' ? 'Actualizar' : 'Update';
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-[#020203]/75 backdrop-blur-md animate-fade-in"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
         id="edit-prompt-modal"
-        className="w-full max-w-2xl overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-2xl shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-prompt-modal-title"
+        onClick={(e) => e.stopPropagation()}
+        className="flex w-full max-w-xl sm:max-w-2xl max-h-[min(92dvh,760px)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c10]/95 shadow-2xl shadow-black/50 backdrop-blur-2xl"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/5 p-5 bg-white/[0.02]">
-          <h3 className="font-display text-lg font-semibold text-slate-100 flex items-center gap-2">
-            <span className="inline-block w-2.5 h-2.5 rounded-full bg-fuchsia-500 shadow-sm shadow-fuchsia-500/50"></span>
-            {t.language === 'es' ? 'Editar Prompt' : 'Edit Prompt'}
+        <div className="flex shrink-0 items-center justify-between border-b border-white/5 px-6 py-5 sm:px-7 sm:py-6">
+          <h3
+            id="edit-prompt-modal-title"
+            className="font-display text-lg font-semibold text-slate-100 flex items-center gap-2.5"
+          >
+            <span className="inline-block h-2.5 w-2.5 rounded-full bg-fuchsia-500 shadow-sm shadow-fuchsia-500/50" />
+            {modalTitle}
           </h3>
-          <button 
+          <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1 text-slate-400 hover:bg-white/10 hover:text-slate-200 transition-colors cursor-pointer"
+            aria-label={t.addPrompt.cancel}
+            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-200 cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Content Form */}
-        <form onSubmit={handleUpdate} className="p-6 space-y-5">
-          {error && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-rose-300 text-sm animate-fade-in">
-              <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          {success && (
-            <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-emerald-300 text-sm animate-fade-in">
-              <Check className="w-4 h-4 shrink-0" />
-              <span>{t.language === 'es' ? 'Prompt actualizado con éxito' : 'Prompt updated successfully!'}</span>
-            </div>
-          )}
-
-          {/* Manual Input Fields */}
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t.addPrompt.titleLabel}</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder={t.addPrompt.titlePlaceholder}
-                className="w-full rounded-lg border border-white/10 bg-[#050507]/40 p-2.5 text-slate-200 text-sm focus:border-fuchsia-500/50 focus:outline-none transition-colors"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{t.addPrompt.contentLabel}</label>
-                <button
-                  type="button"
-                  onClick={handlePasteClipboard}
-                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-fuchsia-400 transition-colors cursor-pointer"
-                >
-                  <Clipboard className="w-3.5 h-3.5" />
-                  {t.addPrompt.clipboardPaste}
-                </button>
+        <form onSubmit={handleUpdate} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-6 py-6 sm:px-7 sm:py-7 custom-scrollbar">
+            {error && (
+              <div className="flex items-start gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-3.5 text-sm text-rose-300 animate-fade-in">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{error}</span>
               </div>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={t.addPrompt.contentPlaceholder}
-                rows={7}
-                className="w-full rounded-lg border border-white/10 bg-[#050507]/40 p-3 text-slate-200 text-sm font-mono focus:border-fuchsia-500/50 focus:outline-none transition-colors resize-y leading-relaxed"
-              />
+            )}
+
+            {success && (
+              <div className="flex items-center gap-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3.5 text-sm text-emerald-300 animate-fade-in">
+                <Check className="h-4 w-4 shrink-0" />
+                <span>{successMessage}</span>
+              </div>
+            )}
+
+            <div className="space-y-5">
+              <div>
+                <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-slate-400">
+                  {t.addPrompt.titleLabel}
+                </label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder={t.addPrompt.titlePlaceholder}
+                  className="w-full rounded-xl border border-white/10 bg-[#050507]/60 px-3.5 py-2.5 text-sm text-slate-200 transition-colors focus:border-fuchsia-500/50 focus:outline-none focus:ring-1 focus:ring-fuchsia-500/20"
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                    {t.addPrompt.contentLabel}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handlePasteClipboard}
+                    className="flex shrink-0 items-center gap-1.5 text-xs text-slate-400 transition-colors hover:text-fuchsia-400 cursor-pointer"
+                  >
+                    <Clipboard className="h-3.5 w-3.5" />
+                    {t.addPrompt.clipboardPaste}
+                  </button>
+                </div>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder={t.addPrompt.contentPlaceholder}
+                  rows={8}
+                  className="min-h-[200px] w-full resize-y rounded-xl border border-white/10 bg-[#050507]/60 px-3.5 py-3 font-mono text-sm leading-relaxed text-slate-200 transition-colors focus:border-fuchsia-500/50 focus:outline-none focus:ring-1 focus:ring-fuchsia-500/20"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Footer controls */}
-          <div className="flex items-center justify-end gap-3 border-t border-white/5 pt-5">
+          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-white/5 bg-white/[0.02] px-6 py-5 sm:px-7">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-white/10 hover:bg-white/5 px-5 py-2 text-slate-300 text-sm font-semibold transition-all cursor-pointer"
+              disabled={loading}
+              className="rounded-lg px-4 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200 disabled:opacity-50 cursor-pointer"
             >
-              {t.language === 'es' ? 'Cancelar' : 'Cancel'}
+              {t.addPrompt.cancel}
             </button>
             <button
               type="submit"
               disabled={loading || success}
-              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 disabled:opacity-50 px-5 py-2 text-slate-100 text-sm font-semibold border border-white/10 shadow-lg cursor-pointer transition-all"
+              className="flex items-center gap-2 rounded-xl border border-white/10 bg-gradient-to-r from-indigo-600 to-fuchsia-600 px-5 py-2.5 text-sm font-semibold text-slate-100 shadow-lg transition-all hover:from-indigo-500 hover:to-fuchsia-500 disabled:opacity-50 cursor-pointer"
             >
               {loading && (
-                <div className="w-4 h-4 border-2 border-slate-100 border-t-transparent rounded-full animate-spin"></div>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-100 border-t-transparent" />
               )}
-              {t.language === 'es' ? 'Actualizar' : 'Update'}
+              {updateLabel}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -37,8 +37,10 @@ export default function App() {
   const toggleSidebar = useStore((state) => state.toggleSidebar);
   const openSidebarByHover = useStore((state) => state.openSidebarByHover);
   const closeSidebarIfHoverOpened = useStore((state) => state.closeSidebarIfHoverOpened);
+  const setSidebarOpen = useStore((state) => state.setSidebarOpen);
   const refreshFromDb = useStore((state) => state.refreshFromDb);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const language = useStore((state) => state.language);
   const isMdUp = useMdUp();
 
   useEffect(() => {
@@ -128,6 +130,8 @@ export default function App() {
         id="app-main-content"
         style={sidebarOpen && isMdUp ? { paddingLeft: settingsSidebarWidth } : undefined}
         className={`flex-grow min-h-dvh flex flex-col items-center px-4 sm:px-6 md:px-10 py-6 relative z-10 ${
+          sidebarOpen ? 'pointer-events-none' : ''
+        } ${
           settingsSidebarResizing
             ? 'transition-[opacity,transform,color,background-color] duration-300 ease-out'
             : 'transition-all duration-300 ease-out'
@@ -137,6 +141,18 @@ export default function App() {
           <ChatShell />
         </div>
       </main>
+
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label={language === 'es' ? 'Cerrar ajustes' : 'Close settings'}
+          className="fixed inset-0 cursor-default bg-black/25 backdrop-blur-[1px]"
+          style={{ zIndex: 38 }}
+          onClick={() => {
+            if (!settingsSidebarResizing) setSidebarOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

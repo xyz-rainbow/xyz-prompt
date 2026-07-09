@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { Database, PlusCircle, Trash2 } from 'lucide-react';
+import React from 'react';
+import { Database } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import AddPromptPopup from '../prompts/AddPromptPopup';
 import BrandMark from './BrandMark';
+import PromptOperationsSection from '../prompts/PromptOperationsSection';
 
 export default function NavigationPanelContent() {
   const clearSidebarHoverOpen = useStore((state) => state.clearSidebarHoverOpen);
@@ -17,19 +17,10 @@ export default function NavigationPanelContent() {
   const prompts = useStore((state) => state.prompts);
   const votes = useStore((state) => state.votes);
   const feedbacks = useStore((state) => state.feedbacks);
-  const clearDatabase = useStore((state) => state.clearDatabase);
-
-  const [addOpen, setAddOpen] = useState(false);
 
   const totalLikes = votes.filter((v) => v.type === 'like').length;
   const totalDislikes = votes.filter((v) => v.type === 'dislike').length;
   const totalComments = feedbacks.length;
-
-  const handleReset = async () => {
-    if (confirm(language === 'es' ? '¿Estás seguro de que deseas vaciar la base de datos local?' : 'Are you sure you want to clear the local database?')) {
-      await clearDatabase();
-    }
-  };
 
   return (
     <>
@@ -39,17 +30,7 @@ export default function NavigationPanelContent() {
           <p className="text-xs text-slate-400 mt-3 leading-relaxed">{t.sidebar.description}</p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => {
-            clearSidebarHoverOpen();
-            setAddOpen(true);
-          }}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-fuchsia-600 hover:from-indigo-500 hover:to-fuchsia-500 text-slate-100 py-3 text-sm font-semibold shadow-md shadow-indigo-950/40 border border-white/10 cursor-pointer transition-all duration-300 hover:scale-[1.02]"
-        >
-          <PlusCircle className="w-4 h-4" />
-          {t.sidebar.addPrompt}
-        </button>
+        <PromptOperationsSection accent="indigo" onBeforeAction={clearSidebarHoverOpen} />
 
         <div className="space-y-3">
           <h3 className="text-[10px] font-mono font-semibold tracking-widest text-slate-500 uppercase flex items-center gap-1.5">
@@ -88,21 +69,11 @@ export default function NavigationPanelContent() {
         </div>
       </div>
 
-      <div className="shrink-0 px-5 py-4 border-t border-white/5 bg-white/[0.01] space-y-3 min-w-0 w-full">
-        <button
-          type="button"
-          onClick={handleReset}
-          className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-rose-500/20 hover:border-rose-500/40 hover:bg-rose-500/5 text-rose-400 py-2 text-xs font-medium cursor-pointer transition-colors"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          {language === 'es' ? 'Vaciar IndexedDB' : 'Clear IndexedDB'}
-        </button>
+      <div className="shrink-0 px-5 py-4 border-t border-white/5 bg-white/[0.01] min-w-0 w-full">
         <div className="text-[10px] text-slate-500 text-center font-mono">
           {t.sidebar.allRightsReserved} &copy; 2026
         </div>
       </div>
-
-      {addOpen && <AddPromptPopup onClose={() => setAddOpen(false)} />}
     </>
   );
 }

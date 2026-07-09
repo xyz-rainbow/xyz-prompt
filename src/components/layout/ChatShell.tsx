@@ -16,12 +16,12 @@ import OutputList from '../chat/OutputList';
 import FeedbackComposer from '../rate/FeedbackComposer';
 import BrandMark from './BrandMark';
 import DismissibleBanner from './DismissibleBanner';
+import ModeNav from './ModeNav';
 
 export default function ChatShell() {
   const t = useStore((state) => state.t());
   const language = useStore((state) => state.language);
   const activeMode = useStore((state) => state.activeMode);
-  const setActiveMode = useStore((state) => state.setActiveMode);
   const prompts = useStore((state) => state.prompts);
   const sendChatMessage = useStore((state) => state.sendChatMessage);
   const chatMessages = useStore((state) => state.chatMessages);
@@ -92,22 +92,7 @@ export default function ChatShell() {
                 <BrandMark size="sm" />
               </div>
 
-              <div className="flex bg-white/5 p-1 rounded-full border border-white/10 shadow-lg">
-                {(['pages', 'versus', 'metrics'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    type="button"
-                    onClick={() => setActiveMode(mode)}
-                    className={`px-4 sm:px-5 py-1.5 text-xs font-semibold rounded-full tracking-wide transition-all cursor-pointer ${
-                      activeMode === mode
-                        ? 'bg-white/10 text-lime-300 shadow-lg border border-white/10'
-                        : 'text-white/50 hover:text-white'
-                    }`}
-                  >
-                    {t.modes[mode]}
-                  </button>
-                ))}
-              </div>
+              <ModeNav />
 
               <NavPanelToggle />
             </div>

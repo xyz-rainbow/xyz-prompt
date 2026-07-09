@@ -86,6 +86,8 @@ export interface Translations {
   settings: string;
   toggleSettingsShortcut: string;
   modes: {
+    dashboard: string;
+    control: string;
     pages: string;
     versus: string;
     metrics: string;
