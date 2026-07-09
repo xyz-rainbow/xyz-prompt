@@ -8,12 +8,21 @@ import { Prompt, Vote, Feedback, AppMode, Translations, ChatMessage, VersusOutpu
 import { db } from '../db/schema';
 import { en, es } from '../i18n/translations';
 import { generateChatResponse } from '../services/aiService';
-import { createDefaultProfiles } from '../lib/providers/provider-profile';
+import { createDefaultProfiles, isProfileConfigured } from '../lib/providers/provider-profile';
+import { fetchProviderModels, type ProviderModelsSource } from '../services/providerModels';
 import {
   type ChatErrorInfo,
+  buildChatError,
   checkChatProviderReadiness,
   classifyProviderError,
 } from '../lib/providers/provider-errors';
+
+export interface ProviderModelsRefreshResult {
+  success: boolean;
+  models?: string[];
+  source?: ProviderModelsSource;
+  error?: ChatErrorInfo;
+}
 
 const DEFAULT_AI_SETTINGS: AiSettings = {
   id: 'default',
@@ -180,6 +189,7 @@ interface StoreState {
   upsertProvider: (input: Partial<ProviderProfile> & { id: string }) => Promise<void>;
   deleteProvider: (id: string) => Promise<void>;
   setActiveModel: (providerId: string, modelId: string) => Promise<void>;
+  refreshProviderModels: (providerId: string) => Promise<ProviderModelsRefreshResult>;
   getActiveProvider: () => ProviderProfile | null;
 }
 
@@ -520,6 +530,12 @@ export const useStore = create<StoreState>((set, get) => ({
           id: input.id,
         };
 
+    const isManualModelsOnly =
+      input.manualModels !== undefined &&
+      input.enabled === undefined &&
+      input.baseURL === undefined &&
+      input.apiKey === undefined;
+
     if (input.enabled === true) {
       await db.providers.put({ ...merged, enabled: true });
       await setExclusiveActiveProvider(get, set, merged.id, merged.manualModels[0]);
@@ -534,6 +550,17 @@ export const useStore = create<StoreState>((set, get) => ({
     }
 
     await get().refreshFromDb();
+
+    const shouldAutoRefresh =
+      !isManualModelsOnly &&
+      isProfileConfigured(merged) &&
+      (input.enabled === true ||
+        input.baseURL !== undefined ||
+        (input.apiKey !== undefined && input.apiKey.trim().length > 0));
+
+    if (shouldAutoRefresh) {
+      await get().refreshProviderModels(merged.id);
+    }
   },
 
   deleteProvider: async (id) => {
@@ -552,5 +579,46 @@ export const useStore = create<StoreState>((set, get) => ({
   setActiveModel: async (providerId, modelId) => {
     await setExclusiveActiveProvider(get, set, providerId, modelId);
     await get().refreshFromDb();
+  },
+
+  refreshProviderModels: async (providerId) => {
+    const language = get().language;
+    const profile = await db.providers.get(providerId);
+
+    if (!profile) {
+      return {
+        success: false,
+        error: buildChatError('unknown', language, `Provider not found: ${providerId}`),
+      };
+    }
+
+    if (!isProfileConfigured(profile)) {
+      return {
+        success: false,
+        error: buildChatError('provider_not_configured', language, profile.label),
+      };
+    }
+
+    try {
+      const { models, source } = await fetchProviderModels(profile);
+      await db.providers.put({ ...profile, manualModels: models });
+
+      const { aiSettings } = get();
+      if (aiSettings.activeProviderId === providerId) {
+        const activeStillValid = models.includes(aiSettings.activeModelId);
+        const nextModel = activeStillValid ? aiSettings.activeModelId : models[0];
+        if (nextModel && nextModel !== aiSettings.activeModelId) {
+          await setExclusiveActiveProvider(get, set, providerId, nextModel);
+        }
+      }
+
+      await get().refreshFromDb();
+      return { success: true, models, source };
+    } catch (err) {
+      return {
+        success: false,
+        error: classifyProviderError(err, language, profile),
+      };
+    }
   },
 }));
