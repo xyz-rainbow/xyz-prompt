@@ -345,6 +345,10 @@ export const useStore = create<StoreState>((set, get) => ({
     aiSettings = normalized.aiSettings;
 
     set({ prompts, votes, feedbacks, providers, aiSettings });
+
+    if (prompts.length > 0 && get().chatError?.code === 'no_prompt') {
+      set({ chatError: null });
+    }
   },
 
   addPrompt: async (title, content, source) => {
@@ -509,8 +513,12 @@ export const useStore = create<StoreState>((set, get) => ({
     const { activeMode, prompts, activePageIndex, versusPrompts, language, aiSettings } = get();
     const provider = get().getActiveProvider();
 
-    if (activeMode === 'metrics' || prompts.length === 0) {
+    if (prompts.length === 0) {
       set({ chatError: buildChatError('no_prompt', language), chatLoading: false });
+      return;
+    }
+
+    if (activeMode === 'metrics') {
       return;
     }
 

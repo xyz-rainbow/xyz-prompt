@@ -37,7 +37,9 @@ export const en: Translations = {
     submitFeedback: "Save Feedback",
     feedbackSubmitted: "Feedback saved successfully!",
     deletePrompt: "Delete prompt",
-    deletePromptConfirm: "Delete this prompt permanently?"
+    deletePromptConfirm: "Delete this prompt permanently?",
+    readyToTest: "Send a message below to run this system prompt and see the model output here.",
+    copyResponse: "Copy model output"
   },
   versusMode: {
     title: "A/B Versus Mode",
@@ -178,7 +180,9 @@ export const es: Translations = {
     submitFeedback: "Guardar Feedback",
     feedbackSubmitted: "¡Feedback guardado con éxito!",
     deletePrompt: "Eliminar prompt",
-    deletePromptConfirm: "¿Eliminar este prompt de forma permanente?"
+    deletePromptConfirm: "¿Eliminar este prompt de forma permanente?",
+    readyToTest: "Envía un mensaje abajo para ejecutar este system prompt y ver aquí la respuesta del modelo.",
+    copyResponse: "Copiar respuesta del modelo"
   },
   versusMode: {
     title: "Modo Versus A/B",

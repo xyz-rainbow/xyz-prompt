@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sparkles, CornerDownRight, PlusCircle } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import NavPanelToggle from '../chat/NavPanelToggle';
@@ -12,7 +12,6 @@ import PagesView from '../../views/PagesView';
 import VersusView from '../../views/VersusView';
 import MetricsView from '../../views/MetricsView';
 import AddPromptPopup from '../prompts/AddPromptPopup';
-import OutputList from '../chat/OutputList';
 import FeedbackComposer from '../rate/FeedbackComposer';
 import BrandMark from './BrandMark';
 import DismissibleBanner from './DismissibleBanner';
@@ -23,11 +22,9 @@ export default function ChatShell() {
   const activeMode = useStore((state) => state.activeMode);
   const prompts = useStore((state) => state.prompts);
   const sendChatMessage = useStore((state) => state.sendChatMessage);
-  const chatMessages = useStore((state) => state.chatMessages);
   const chatLoading = useStore((state) => state.chatLoading);
   const chatError = useStore((state) => state.chatError);
   const clearChatError = useStore((state) => state.clearChatError);
-  const activePageIndex = useStore((state) => state.activePageIndex);
   const selectedPagesPromptId = useStore((state) => state.selectedPagesPromptId);
   const setSelectedPagesPromptId = useStore((state) => state.setSelectedPagesPromptId);
   const versusSelectedId = useStore((state) => state.versusSelectedId);
@@ -36,17 +33,21 @@ export default function ChatShell() {
   const [addDirectOpen, setAddDirectOpen] = useState(false);
   const [inputText, setInputText] = useState('');
 
-  const activePrompt = prompts[activePageIndex];
-  const pageMessages = activePrompt
-    ? chatMessages.filter((m) => m.promptId === activePrompt.id)
-    : chatMessages;
-
   const isFeedbackMode =
     (activeMode === 'pages' && selectedPagesPromptId) ||
     (activeMode === 'versus' && versusSelectedId);
 
   const feedbackPromptId =
     activeMode === 'pages' ? selectedPagesPromptId : versusSelectedId;
+
+  useEffect(() => {
+    if (prompts.length > 0 && chatError?.code === 'no_prompt') {
+      clearChatError();
+    }
+  }, [prompts.length, chatError?.code, clearChatError]);
+
+  const visibleChatError =
+    chatError && !(chatError.code === 'no_prompt' && prompts.length > 0) ? chatError : null;
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,12 +92,12 @@ export default function ChatShell() {
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col justify-start min-h-0 py-4 overflow-y-auto overflow-x-hidden">
-              {chatError && (
+              {visibleChatError && (
                 <DismissibleBanner
                   variant="error"
-                  message={chatError.message}
-                  hint={chatError.hint}
-                  detail={chatError.detail}
+                  message={visibleChatError.message}
+                  hint={visibleChatError.hint}
+                  detail={visibleChatError.detail}
                   dismissLabel={t.errors.dismiss}
                   onDismiss={clearChatError}
                 />
@@ -108,10 +109,6 @@ export default function ChatShell() {
             </div>
 
             <div className="min-w-0 shrink-0 space-y-3 border-t border-white/5 pt-4 pb-1">
-              {activeMode === 'pages' && (
-                <OutputList messages={pageMessages} loading={chatLoading} />
-              )}
-
               {isFeedbackMode && feedbackPromptId ? (
                 <FeedbackComposer
                   promptId={feedbackPromptId}
@@ -121,7 +118,7 @@ export default function ChatShell() {
                     setVersusSelectedId(null);
                   }}
                 />
-              ) : (
+              ) : activeMode !== 'metrics' ? (
                 <form onSubmit={handleSend} className="flex min-w-0 w-full items-center gap-2 sm:gap-3">
                   <button
                     type="button"
@@ -155,7 +152,7 @@ export default function ChatShell() {
                     <CornerDownRight className="w-4 h-4" />
                   </button>
                 </form>
-              )}
+              ) : null}
 
               <div className="flex min-w-0 items-center justify-between gap-2 text-[9px] text-white/30 font-mono tracking-wider">
                 <span className="min-w-0 truncate">LOCAL CACHE: READY (PROMPTS: {prompts.length})</span>

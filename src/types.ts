@@ -112,6 +112,8 @@ export interface Translations {
     feedbackSubmitted: string;
     deletePrompt: string;
     deletePromptConfirm: string;
+    readyToTest: string;
+    copyResponse: string;
   };
   versusMode: {
     title: string;

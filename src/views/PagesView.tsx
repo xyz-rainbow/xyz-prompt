@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Copy, Check, Inbox, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Copy, Check, Inbox, Trash2, Sparkles, User, MessageSquare } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import VoteBar from '../components/rate/VoteBar';
 
@@ -16,6 +16,8 @@ export default function PagesView() {
   const selectedPagesPromptId = useStore((state) => state.selectedPagesPromptId);
   const setSelectedPagesPromptId = useStore((state) => state.setSelectedPagesPromptId);
   const deletePrompt = useStore((state) => state.deletePrompt);
+  const chatMessages = useStore((state) => state.chatMessages);
+  const chatLoading = useStore((state) => state.chatLoading);
   const language = useStore((state) => state.language);
 
   const [copied, setCopied] = React.useState(false);
@@ -35,6 +37,13 @@ export default function PagesView() {
   }
 
   const activePrompt = prompts[activePageIndex] || prompts[0];
+  const pageMessages = chatMessages.filter((m) => m.promptId === activePrompt.id);
+  const latestAssistant = [...pageMessages].reverse().find((m) => m.role === 'assistant');
+  const hasOutput = pageMessages.length > 0;
+  const awaitingResponse =
+    chatLoading &&
+    pageMessages.length > 0 &&
+    pageMessages[pageMessages.length - 1]?.role === 'user';
 
   const handleNextPage = () => {
     if (activePageIndex < prompts.length - 1) {
@@ -49,8 +58,9 @@ export default function PagesView() {
   };
 
   const handleCopy = () => {
-    if (!activePrompt) return;
-    navigator.clipboard.writeText(activePrompt.content);
+    const text = latestAssistant?.content ?? '';
+    if (!text) return;
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -64,76 +74,113 @@ export default function PagesView() {
   };
 
   const handleDelete = async () => {
-    if (!activePrompt) return;
     if (!confirm(t.pagesMode.deletePromptConfirm)) return;
     await deletePrompt(activePrompt.id);
   };
 
   return (
-    <div className="relative space-y-6 w-full max-w-2xl mx-auto py-2 animate-fade-in">
+    <div className="relative mx-auto w-full max-w-2xl space-y-6 py-2 animate-fade-in">
       <div className="relative group">
         <button
+          type="button"
           onClick={handlePrevPage}
           disabled={activePageIndex === 0}
-          className={`absolute -left-12 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/15 disabled:opacity-0 disabled:pointer-events-none transition-all shadow-md z-10 cursor-pointer ${
+          className={`absolute -left-12 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 shadow-md transition-all hover:bg-white/15 hover:text-white disabled:pointer-events-none disabled:opacity-0 ${
             activePageIndex > 0 ? 'hover:scale-110 active:scale-95' : ''
           }`}
           title={language === 'es' ? 'Anterior' : 'Previous'}
         >
-          <ChevronLeft className="w-5 h-5" />
+          <ChevronLeft className="h-5 w-5" />
         </button>
 
-        <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5 space-y-4 shadow-2xl backdrop-blur-md">
+        <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.03] p-5 shadow-2xl backdrop-blur-md">
           <div className="flex items-center justify-between border-b border-white/5 pb-3">
-            <div className="flex items-center gap-2.5">
-              <span className="rounded-lg bg-lime-500/10 px-2.5 py-1 text-xs font-bold font-mono text-lime-400 border border-lime-500/20">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="rounded-lg border border-lime-500/20 bg-lime-500/10 px-2.5 py-1 text-xs font-bold font-mono text-lime-400">
                 #{activePrompt.number}
               </span>
-              <h3 className="font-display font-bold text-slate-200 text-sm tracking-wide truncate max-w-[280px]">
+              <h3 className="truncate font-display text-sm font-bold tracking-wide text-slate-200">
                 {activePrompt.title}
               </h3>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <button
                 type="button"
-                onClick={handleDelete}
+                onClick={() => void handleDelete()}
                 title={t.pagesMode.deletePrompt}
-                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
+                className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-500/10 hover:text-rose-400"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
-              <button
-                type="button"
-                onClick={handleCopy}
-                title={language === 'es' ? 'Copiar prompt' : 'Copy prompt text'}
-                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white cursor-pointer"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
-              </button>
+              {latestAssistant && (
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  title={t.pagesMode.copyResponse}
+                  className="cursor-pointer rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  {copied ? <Check className="h-3.5 w-3.5 text-lime-400" /> : <Copy className="h-3.5 w-3.5" />}
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="relative bg-[#050507]/40 backdrop-blur-md rounded-xl border border-white/5 p-4 min-h-[120px] max-h-[220px] overflow-y-auto shadow-inner">
-            <pre className="text-xs text-slate-300 font-mono whitespace-pre-wrap break-all leading-relaxed font-medium">
-              {activePrompt.content}
-            </pre>
+          <div className="relative min-h-[160px] max-h-[min(360px,45vh)] overflow-y-auto rounded-xl border border-white/5 bg-[#050507]/40 p-4 shadow-inner custom-scrollbar">
+            {!hasOutput && !awaitingResponse && (
+              <div className="flex h-full min-h-[140px] flex-col items-center justify-center gap-3 px-4 text-center">
+                <MessageSquare className="h-8 w-8 text-slate-600" />
+                <p className="max-w-sm text-xs leading-relaxed text-slate-500">{t.pagesMode.readyToTest}</p>
+              </div>
+            )}
+
+            {hasOutput && (
+              <div className="space-y-3">
+                {pageMessages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-2.5 rounded-lg border p-3 text-xs leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'border-lime-500/15 bg-lime-500/5 text-slate-300'
+                        : 'border-purple-500/20 bg-purple-500/5 text-slate-200'
+                    }`}
+                  >
+                    <span className="mt-0.5 shrink-0">
+                      {msg.role === 'user' ? (
+                        <User className="h-3.5 w-3.5 text-lime-400" />
+                      ) : (
+                        <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                      )}
+                    </span>
+                    <pre className="flex-1 whitespace-pre-wrap break-words font-sans">{msg.content}</pre>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {awaitingResponse && (
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-purple-500/20 bg-purple-500/5 p-3 text-xs text-purple-300 animate-pulse">
+                <Sparkles className="h-3.5 w-3.5 animate-spin" />
+                <span>{t.chat.thinking}</span>
+              </div>
+            )}
           </div>
         </div>
 
         <button
+          type="button"
           onClick={handleNextPage}
           disabled={activePageIndex === prompts.length - 1}
-          className={`absolute -right-12 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/15 disabled:opacity-0 disabled:pointer-events-none transition-all shadow-md z-10 cursor-pointer ${
+          className={`absolute -right-12 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-300 shadow-md transition-all hover:bg-white/15 hover:text-white disabled:pointer-events-none disabled:opacity-0 ${
             activePageIndex < prompts.length - 1 ? 'hover:scale-110 active:scale-95' : ''
           }`}
           title={language === 'es' ? 'Siguiente' : 'Next'}
         >
-          <ChevronRight className="w-5 h-5" />
+          <ChevronRight className="h-5 w-5" />
         </button>
       </div>
 
-      <div className="flex justify-center text-xs font-mono text-slate-500 tracking-wider">
+      <div className="flex justify-center text-xs font-mono tracking-wider text-slate-500">
         {activePageIndex + 1} / {prompts.length}
       </div>
 
