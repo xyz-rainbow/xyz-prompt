@@ -34,20 +34,18 @@ export default function ModeNav() {
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
-  const dashboardBtnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isDashboardActive = activeMode === 'pages' || activeMode === 'versus';
   const isControlActive = activeMode === 'metrics';
 
   const updateMenuPosition = useCallback(() => {
-    const btn = dashboardBtnRef.current;
-    if (!btn) return;
+    const anchor = navRef.current;
+    if (!anchor) return;
 
-    const rect = btn.getBoundingClientRect();
+    const rect = anchor.getBoundingClientRect();
     const width = Math.min(220, window.innerWidth - 32);
-    const centeredLeft = rect.left + rect.width / 2 - width / 2;
-    const left = Math.min(Math.max(16, centeredLeft), window.innerWidth - width - 16);
+    const left = (window.innerWidth - width) / 2;
 
     setMenuPosition({
       top: rect.bottom + 8,
@@ -163,7 +161,6 @@ export default function ModeNav() {
         className="relative flex min-w-0 max-w-full shrink bg-white/5 p-0.5 sm:p-1 rounded-full border border-white/10 shadow-lg"
       >
         <button
-          ref={dashboardBtnRef}
           type="button"
           onClick={handleDashboardClick}
           title={t.modes.dashboard}
