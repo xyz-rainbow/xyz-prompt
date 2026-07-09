@@ -9,7 +9,7 @@
 [![Vite](https://img.shields.io/badge/vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-**Repository:** [github.com/RainbowKolors/xyz-prompt](https://github.com/RainbowKolors/xyz-prompt)
+**Repository:** [github.com/xyz-rainbow/xyz-prompt](https://github.com/xyz-rainbow/xyz-prompt)
 
 ---
 
@@ -26,7 +26,7 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/RainbowKolors/xyz-prompt.git
+git clone https://github.com/xyz-rainbow/xyz-prompt.git
 cd xyz-prompt
 npm install
 npm run dev

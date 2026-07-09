@@ -16,7 +16,7 @@ Thank you for your interest in contributing! xyz-prompt is a React SPA for ratin
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/RainbowKolors/xyz-prompt.git
+git clone https://github.com/xyz-rainbow/xyz-prompt.git
 cd xyz-prompt
 npm install
 ```
@@ -70,4 +70,4 @@ Both commands must pass before opening a pull request.
 
 ## Questions
 
-Open a [GitHub issue](https://github.com/RainbowKolors/xyz-prompt/issues) for bugs or feature discussions before large changes.
+Open a [GitHub issue](https://github.com/xyz-rainbow/xyz-prompt/issues) for bugs or feature discussions before large changes.
