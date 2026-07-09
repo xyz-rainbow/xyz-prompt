@@ -1,0 +1,31 @@
+# Dependencies & build
+node_modules/
+dist/
+.vite/
+
+# Environment & API keys
+.env
+.env.*
+!.env.example
+*.pem
+secrets/
+**/api-keys*
+**/credentials*
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+*.swp
+*.swo
+
+# Test & coverage
+coverage/
+.nyc_output/
+
+# Optional defensive (no Python in project, but harmless)
+.venv/
+__pycache__/
+*.pyc

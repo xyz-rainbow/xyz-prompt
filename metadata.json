@@ -1,0 +1,6 @@
+{
+  "name": "Prompt Rating App",
+  "description": "An interactive SPA to rate, compare, and analyze prompts in Pages, Versus, and Metrics modes, featuring multi-format file uploads and local IndexedDB persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

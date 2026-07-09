@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" width="100%" height="100%">
+  <title>xyz-prompt rating workflow</title>
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a0b10" />
+      <stop offset="100%" stop-color="#141622" />
+    </linearGradient>
+    <linearGradient id="cyber-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffb1de" />
+      <stop offset="50%" stop-color="#a6e7ff" />
+      <stop offset="100%" stop-color="#bfffa6" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="5" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#a6e7ff" />
+    </marker>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#bg-grad)" rx="15" />
+  <g stroke="#ffffff" stroke-opacity="0.04" stroke-width="1">
+    <line x1="0" y1="60" x2="1000" y2="60" /><line x1="0" y1="120" x2="1000" y2="120" />
+    <line x1="0" y1="180" x2="1000" y2="180" /><line x1="0" y1="240" x2="1000" y2="240" />
+    <line x1="0" y1="300" x2="1000" y2="300" />
+  </g>
+  <text x="500" y="36" font-family="'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="bold" fill="#a6e7ff" text-anchor="middle" letter-spacing="2" filter="url(#glow)">RATING WORKFLOW</text>
+  <text x="500" y="36" font-family="'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle" letter-spacing="2">RATING WORKFLOW</text>
+
+  <g transform="translate(30, 80)">
+    <rect width="150" height="100" rx="10" fill="#1d2230" stroke="#ffb1de" stroke-width="1.5" />
+    <circle cx="75" cy="35" r="14" fill="#ffb1de" opacity="0.2" />
+    <text x="75" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" fill="#ffb1de" text-anchor="middle">1</text>
+    <text x="75" y="68" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">IMPORT</text>
+    <text x="75" y="86" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.6">Upload or paste prompts</text>
+  </g>
+  <path d="M190 130 H220" stroke="#a6e7ff" stroke-width="2" marker-end="url(#arrow)" />
+
+  <g transform="translate(230, 80)">
+    <rect width="150" height="100" rx="10" fill="#1d2230" stroke="#a6e7ff" stroke-width="1.5" />
+    <circle cx="75" cy="35" r="14" fill="#a6e7ff" opacity="0.2" />
+    <text x="75" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" fill="#a6e7ff" text-anchor="middle">2</text>
+    <text x="75" y="68" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">BROWSE</text>
+    <text x="75" y="86" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.6">Pages or Versus mode</text>
+  </g>
+  <path d="M390 130 H420" stroke="#a6e7ff" stroke-width="2" marker-end="url(#arrow)" />
+
+  <g transform="translate(430, 80)">
+    <rect width="150" height="100" rx="10" fill="#1d2230" stroke="#a3e635" stroke-width="1.5" />
+    <circle cx="75" cy="35" r="14" fill="#a3e635" opacity="0.2" />
+    <text x="75" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" fill="#a3e635" text-anchor="middle">3</text>
+    <text x="75" y="68" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">VOTE</text>
+    <text x="75" y="86" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.6">Like / dislike / select</text>
+  </g>
+  <path d="M590 130 H620" stroke="#a6e7ff" stroke-width="2" marker-end="url(#arrow)" />
+
+  <g transform="translate(630, 80)">
+    <rect width="150" height="100" rx="10" fill="#1d2230" stroke="#a855f7" stroke-width="1.5" />
+    <circle cx="75" cy="35" r="14" fill="#a855f7" opacity="0.2" />
+    <text x="75" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" fill="#a855f7" text-anchor="middle">4</text>
+    <text x="75" y="68" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">FEEDBACK</text>
+    <text x="75" y="86" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.6">Write or AI-assist</text>
+  </g>
+  <path d="M790 130 H820" stroke="#a6e7ff" stroke-width="2" marker-end="url(#arrow)" />
+
+  <g transform="translate(830, 80)">
+    <rect width="140" height="100" rx="10" fill="#1d2230" stroke="#bfffa6" stroke-width="1.5" />
+    <circle cx="70" cy="35" r="14" fill="#bfffa6" opacity="0.2" />
+    <text x="70" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="bold" fill="#bfffa6" text-anchor="middle">5</text>
+    <text x="70" y="68" font-family="'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">METRICS</text>
+    <text x="70" y="86" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.6">Grid overview</text>
+  </g>
+
+  <path d="M500 190 L500 215" stroke="#bfffa6" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.5" />
+
+  <g transform="translate(150, 225)">
+    <rect width="700" height="130" rx="10" fill="#1d2230" stroke="url(#cyber-grad)" stroke-width="1.5" />
+    <text x="350" y="30" font-family="'Segoe UI', Roboto, sans-serif" font-size="13" font-weight="bold" fill="#a6e7ff" text-anchor="middle" letter-spacing="1">OPTIONAL: TEST WITH AI PROVIDERS</text>
+    <g transform="translate(40, 50)">
+      <rect width="180" height="55" rx="6" fill="#151924" stroke="#a855f7" stroke-width="0.5" />
+      <text x="90" y="22" font-family="'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="bold" fill="#a855f7" text-anchor="middle">CONFIGURE</text>
+      <text x="90" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.65">Settings panel providers</text>
+    </g>
+    <g transform="translate(260, 50)">
+      <rect width="180" height="55" rx="6" fill="#151924" stroke="#a6e7ff" stroke-width="0.5" />
+      <text x="90" y="22" font-family="'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="bold" fill="#a6e7ff" text-anchor="middle">CHAT TEST</text>
+      <text x="90" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.65">Send message to system prompt</text>
+    </g>
+    <g transform="translate(480, 50)">
+      <rect width="180" height="55" rx="6" fill="#151924" stroke="#a3e635" stroke-width="0.5" />
+      <text x="90" y="22" font-family="'Segoe UI', Roboto, sans-serif" font-size="10" font-weight="bold" fill="#a3e635" text-anchor="middle">MOCK MODE</text>
+      <text x="90" y="40" font-family="'Segoe UI', Roboto, sans-serif" font-size="9" fill="#ffffff" text-anchor="middle" opacity="0.65">No API key required</text>
+    </g>
+  </g>
+  <text x="500" y="388" font-family="'Courier New', monospace" font-size="10" fill="#bfffa6" text-anchor="middle" opacity="0.5">xyz-rainbow - rainbowtechnology.xyz</text>
+</svg>
