@@ -6,7 +6,7 @@
 import { Translations } from '../types';
 
 export const en: Translations = {
-  title: "Prompt Rating",
+  title: "xyz-prompt",
   subtitle: "Optimize, compare, and analyze your generative prompts with precision",
   menu: "Menu",
   settings: "Settings",
@@ -16,7 +16,7 @@ export const en: Translations = {
     metrics: "Metrics Grid"
   },
   sidebar: {
-    title: "Prompt rater",
+    title: "xyz-prompt",
     description: "Rate, compare, and polish your prompts using IndexedDB local storage and simulated AI.",
     addPrompt: "Add New Prompt",
     totalPrompts: "Total Prompts",
@@ -95,8 +95,11 @@ export const en: Translations = {
     placeholderVersus: "Send a message to compare both prompts...",
     placeholderMetrics: "Type a full prompt to save it quickly...",
     send: "Send",
-    thinking: "Simulating response...",
+    thinking: "Generating response...",
     simulatedResponse: "Simulated Response",
+  },
+  errors: {
+    dismiss: "Dismiss",
   },
   providers: {
     title: "AI Providers",
@@ -119,8 +122,6 @@ export const en: Translations = {
     name: "Name",
     protocol: "Protocol",
     activeModel: "Active model",
-    preferMock: "Simulated AI only",
-    preferMockDesc: "Ignore providers and use mock responses",
     saved: "Provider saved",
     cleared: "API key cleared",
     delete: "Delete",
@@ -131,7 +132,7 @@ export const en: Translations = {
 };
 
 export const es: Translations = {
-  title: "Valoración de Prompts",
+  title: "xyz-prompt",
   subtitle: "Optimiza, compara y analiza tus prompts generativos con precisión",
   menu: "Menú",
   settings: "Ajustes",
@@ -141,7 +142,7 @@ export const es: Translations = {
     metrics: "Métrica Grid"
   },
   sidebar: {
-    title: "Validador de Prompts",
+    title: "xyz-prompt",
     description: "Valora, compara y pule tus prompts usando IndexedDB local y auditoría de IA simulada.",
     addPrompt: "Añadir Nuevo Prompt",
     totalPrompts: "Prompts Totales",
@@ -220,8 +221,11 @@ export const es: Translations = {
     placeholderVersus: "Envía un mensaje para comparar ambos prompts...",
     placeholderMetrics: "Escribe un prompt completo para guardarlo rápidamente...",
     send: "Enviar",
-    thinking: "Simulando respuesta...",
+    thinking: "Generando respuesta...",
     simulatedResponse: "Respuesta simulada",
+  },
+  errors: {
+    dismiss: "Cerrar",
   },
   providers: {
     title: "Proveedores IA",
@@ -244,8 +248,6 @@ export const es: Translations = {
     name: "Nombre",
     protocol: "Protocolo",
     activeModel: "Modelo activo",
-    preferMock: "Solo IA simulada",
-    preferMockDesc: "Ignorar proveedores y usar respuestas mock",
     saved: "Proveedor guardado",
     cleared: "API key borrada",
     delete: "Eliminar",

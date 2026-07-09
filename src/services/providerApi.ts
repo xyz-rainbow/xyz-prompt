@@ -3,6 +3,7 @@
  */
 
 import type { ProviderProfile } from '../types';
+import { ProviderRequestError } from '../lib/providers/provider-errors';
 
 export interface ChatCompletionInput {
   profile: ProviderProfile;
@@ -35,14 +36,14 @@ async function openAiCompatibleChat(input: ChatCompletionInput): Promise<string>
 
   if (!res.ok) {
     const errText = await res.text().catch(() => res.statusText);
-    throw new Error(`OpenAI-compatible error ${res.status}: ${errText.slice(0, 200)}`);
+    throw new ProviderRequestError(errText || res.statusText, res.status, errText);
   }
 
   const json = (await res.json()) as {
     choices?: Array<{ message?: { content?: string } }>;
   };
   const content = json.choices?.[0]?.message?.content;
-  if (!content) throw new Error('Empty response from provider');
+  if (!content) throw new ProviderRequestError('Empty response from provider');
   return content;
 }
 
@@ -65,14 +66,14 @@ async function anthropicChat(input: ChatCompletionInput): Promise<string> {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => res.statusText);
-    throw new Error(`Anthropic error ${res.status}: ${errText.slice(0, 200)}`);
+    throw new ProviderRequestError(errText || res.statusText, res.status, errText);
   }
 
   const json = (await res.json()) as {
     content?: Array<{ type: string; text?: string }>;
   };
   const text = json.content?.find((c) => c.type === 'text')?.text;
-  if (!text) throw new Error('Empty response from Anthropic');
+  if (!text) throw new ProviderRequestError('Empty response from Anthropic');
   return text;
 }
 
@@ -90,14 +91,14 @@ async function googleChat(input: ChatCompletionInput): Promise<string> {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => res.statusText);
-    throw new Error(`Google error ${res.status}: ${errText.slice(0, 200)}`);
+    throw new ProviderRequestError(errText || res.statusText, res.status, errText);
   }
 
   const json = (await res.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   };
   const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error('Empty response from Google');
+  if (!text) throw new ProviderRequestError('Empty response from Google');
   return text;
 }
 
@@ -118,12 +119,12 @@ async function ollamaChat(input: ChatCompletionInput): Promise<string> {
 
   if (!res.ok) {
     const errText = await res.text().catch(() => res.statusText);
-    throw new Error(`Ollama error ${res.status}: ${errText.slice(0, 200)}`);
+    throw new ProviderRequestError(errText || res.statusText, res.status, errText);
   }
 
   const json = (await res.json()) as { message?: { content?: string } };
   const content = json.message?.content;
-  if (!content) throw new Error('Empty response from Ollama');
+  if (!content) throw new ProviderRequestError('Empty response from Ollama');
   return content;
 }
 
@@ -141,6 +142,6 @@ export async function callProviderChat(input: ChatCompletionInput): Promise<stri
     case 'ollama':
       return ollamaChat(input);
     default:
-      throw new Error(`Unsupported protocol: ${protocol}`);
+      throw new ProviderRequestError(`Unsupported protocol: ${protocol}`);
   }
 }

@@ -9,13 +9,111 @@ import { db } from '../db/schema';
 import { en, es } from '../i18n/translations';
 import { generateChatResponse } from '../services/aiService';
 import { createDefaultProfiles } from '../lib/providers/provider-profile';
+import {
+  type ChatErrorInfo,
+  checkChatProviderReadiness,
+  classifyProviderError,
+} from '../lib/providers/provider-errors';
 
 const DEFAULT_AI_SETTINGS: AiSettings = {
   id: 'default',
   activeProviderId: null,
   activeModelId: 'gpt-4o-mini',
-  preferMock: true,
 };
+
+type StoreGetter = () => StoreState;
+type StoreSetter = (
+  partial: Partial<StoreState> | ((state: StoreState) => Partial<StoreState>),
+) => void;
+
+/** Solo un proveedor enabled a la vez; null = todos off */
+async function setExclusiveActiveProvider(
+  get: StoreGetter,
+  set: StoreSetter,
+  providerId: string | null,
+  modelId?: string,
+) {
+  const all = await db.providers.toArray();
+  const aiSettings = get().aiSettings;
+
+  if (providerId) {
+    const target = all.find((p) => p.id === providerId);
+    const resolvedModelId = modelId ?? target?.manualModels[0] ?? aiSettings.activeModelId;
+    await Promise.all(
+      all.map((p) => db.providers.put({ ...p, enabled: p.id === providerId })),
+    );
+    const nextSettings: AiSettings = {
+      ...aiSettings,
+      activeProviderId: providerId,
+      activeModelId: resolvedModelId,
+    };
+    await db.aiSettings.put(nextSettings);
+    const providers = await db.providers.toArray();
+    set({ aiSettings: nextSettings, providers });
+    return;
+  }
+
+  await Promise.all(all.map((p) => db.providers.put({ ...p, enabled: false })));
+  const nextSettings: AiSettings = {
+    ...aiSettings,
+    activeProviderId: null,
+  };
+  await db.aiSettings.put(nextSettings);
+  const providers = await db.providers.toArray();
+  set({ aiSettings: nextSettings, providers });
+}
+
+async function normalizeExclusiveProviders(
+  providers: ProviderProfile[],
+  aiSettings: AiSettings,
+): Promise<{ providers: ProviderProfile[]; aiSettings: AiSettings }> {
+  const enabledList = providers.filter((p) => p.enabled);
+
+  if (enabledList.length > 1) {
+    const keeperId =
+      aiSettings.activeProviderId &&
+      enabledList.some((p) => p.id === aiSettings.activeProviderId)
+        ? aiSettings.activeProviderId
+        : enabledList[0].id;
+    await Promise.all(
+      providers.map((p) =>
+        p.enabled !== (p.id === keeperId)
+          ? db.providers.put({ ...p, enabled: p.id === keeperId })
+          : Promise.resolve(),
+      ),
+    );
+    const nextProviders = await db.providers.toArray();
+    const keeper = nextProviders.find((p) => p.id === keeperId);
+    const nextSettings: AiSettings = {
+      ...aiSettings,
+      activeProviderId: keeperId,
+      activeModelId: keeper?.manualModels[0] ?? aiSettings.activeModelId,
+    };
+    await db.aiSettings.put(nextSettings);
+    return { providers: nextProviders, aiSettings: nextSettings };
+  }
+
+  if (enabledList.length === 1 && aiSettings.activeProviderId !== enabledList[0].id) {
+    const nextSettings: AiSettings = {
+      ...aiSettings,
+      activeProviderId: enabledList[0].id,
+      activeModelId: enabledList[0].manualModels[0] ?? aiSettings.activeModelId,
+    };
+    await db.aiSettings.put(nextSettings);
+    return { providers, aiSettings: nextSettings };
+  }
+
+  if (enabledList.length === 0 && aiSettings.activeProviderId) {
+    const nextSettings: AiSettings = {
+      ...aiSettings,
+      activeProviderId: null,
+    };
+    await db.aiSettings.put(nextSettings);
+    return { providers, aiSettings: nextSettings };
+  }
+
+  return { providers, aiSettings };
+}
 
 interface StoreState {
   // i18n
@@ -67,12 +165,14 @@ interface StoreState {
   // Versus helper
   generateNextVersus: () => void;
 
-  // Chat mock outputs
+  // Chat
   chatMessages: ChatMessage[];
   chatLoading: boolean;
+  chatError: ChatErrorInfo | null;
   versusOutputs: VersusOutputs | null;
   sendChatMessage: (message: string) => Promise<void>;
   clearChat: () => void;
+  clearChatError: () => void;
 
   // AI providers
   providers: ProviderProfile[];
@@ -80,7 +180,6 @@ interface StoreState {
   upsertProvider: (input: Partial<ProviderProfile> & { id: string }) => Promise<void>;
   deleteProvider: (id: string) => Promise<void>;
   setActiveModel: (providerId: string, modelId: string) => Promise<void>;
-  setPreferMock: (preferMock: boolean) => Promise<void>;
   getActiveProvider: () => ProviderProfile | null;
 }
 
@@ -93,16 +192,25 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   // UI state defaults
-  sidebarOpen: true,
+  sidebarOpen: false,
   sidebarOpenedByHover: false,
   toggleSidebar: () =>
-    set((state) => ({
-      sidebarOpen: !state.sidebarOpen,
-      sidebarOpenedByHover: false,
-    })),
+    set((state) => {
+      const opening = !state.sidebarOpen;
+      return {
+        sidebarOpen: !state.sidebarOpen,
+        sidebarOpenedByHover: false,
+        ...(opening ? { settingsOpen: false } : {}),
+      };
+    }),
   setSidebarOpen: (sidebarOpen) =>
-    set({ sidebarOpen, sidebarOpenedByHover: false }),
-  openSidebarByHover: () => set({ sidebarOpen: true, sidebarOpenedByHover: true }),
+    set((state) => ({
+      sidebarOpen,
+      sidebarOpenedByHover: false,
+      settingsOpen: sidebarOpen ? false : state.settingsOpen,
+    })),
+  openSidebarByHover: () =>
+    set({ sidebarOpen: true, sidebarOpenedByHover: true, settingsOpen: false }),
   closeSidebarIfHoverOpened: () =>
     set((state) =>
       state.sidebarOpenedByHover
@@ -111,7 +219,12 @@ export const useStore = create<StoreState>((set, get) => ({
     ),
   clearSidebarHoverOpen: () => set({ sidebarOpenedByHover: false }),
   settingsOpen: false,
-  setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
+  setSettingsOpen: (settingsOpen) =>
+    set((state) =>
+      settingsOpen
+        ? { settingsOpen: true, sidebarOpen: false, sidebarOpenedByHover: false }
+        : { settingsOpen: false },
+    ),
 
   // Mode & navigation
   activeMode: 'pages',
@@ -161,6 +274,10 @@ export const useStore = create<StoreState>((set, get) => ({
       aiSettings = DEFAULT_AI_SETTINGS;
       await db.aiSettings.put(aiSettings);
     }
+
+    const normalized = await normalizeExclusiveProviders(providers, aiSettings);
+    providers = normalized.providers;
+    aiSettings = normalized.aiSettings;
 
     set({ prompts, votes, feedbacks, providers, aiSettings });
   },
@@ -255,6 +372,7 @@ export const useStore = create<StoreState>((set, get) => ({
       chatMessages: [],
       versusOutputs: null,
       chatLoading: false,
+      chatError: null,
     });
   },
 
@@ -276,15 +394,18 @@ export const useStore = create<StoreState>((set, get) => ({
 
   chatMessages: [],
   chatLoading: false,
+  chatError: null,
   versusOutputs: null,
 
-  clearChat: () => set({ chatMessages: [], versusOutputs: null, chatLoading: false }),
+  clearChat: () => set({ chatMessages: [], versusOutputs: null, chatLoading: false, chatError: null }),
+  clearChatError: () => set({ chatError: null }),
 
   sendChatMessage: async (message) => {
     const trimmed = message.trim();
     if (!trimmed) return;
 
-    const { activeMode, prompts, activePageIndex, versusPrompts, language } = get();
+    const { activeMode, prompts, activePageIndex, versusPrompts, language, aiSettings } = get();
+    const provider = get().getActiveProvider();
 
     if (activeMode === 'metrics' || (activeMode === 'pages' && prompts.length === 0)) {
       const words = trimmed.split(/\s+/);
@@ -293,6 +414,19 @@ export const useStore = create<StoreState>((set, get) => ({
       await get().addPrompt(defaultTitle, trimmed, 'chat_input');
       return;
     }
+
+    const readinessError = checkChatProviderReadiness(provider, aiSettings, language);
+    if (readinessError) {
+      set({ chatError: readinessError, chatLoading: false });
+      return;
+    }
+
+    if (!provider) {
+      set({ chatError: checkChatProviderReadiness(null, aiSettings, language), chatLoading: false });
+      return;
+    }
+
+    set({ chatError: null });
 
     if (activeMode === 'pages') {
       const activePrompt = prompts[activePageIndex] || prompts[0];
@@ -304,17 +438,30 @@ export const useStore = create<StoreState>((set, get) => ({
       };
       set({ chatMessages: [...get().chatMessages, userMsg], chatLoading: true });
 
-      const response = await generateChatResponse(activePrompt.content, trimmed, undefined, get().getActiveProvider(), get().aiSettings);
-      const assistantMsg: ChatMessage = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: response,
-        promptId: activePrompt.id,
-      };
-      set({
-        chatMessages: [...get().chatMessages, assistantMsg],
-        chatLoading: false,
-      });
+      try {
+        const response = await generateChatResponse(
+          activePrompt.content,
+          trimmed,
+          undefined,
+          provider,
+          aiSettings
+        );
+        const assistantMsg: ChatMessage = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: response,
+          promptId: activePrompt.id,
+        };
+        set({
+          chatMessages: [...get().chatMessages, assistantMsg],
+          chatLoading: false,
+        });
+      } catch (err) {
+        set({
+          chatLoading: false,
+          chatError: classifyProviderError(err, language, provider),
+        });
+      }
       return;
     }
 
@@ -325,15 +472,23 @@ export const useStore = create<StoreState>((set, get) => ({
         versusOutputs: { promptA: null, promptB: null, userMessage: trimmed },
       });
 
-      const [outA, outB] = await Promise.all([
-        generateChatResponse(promptA.content, trimmed, 'ALPHA', get().getActiveProvider(), get().aiSettings),
-        generateChatResponse(promptB.content, trimmed, 'BETA', get().getActiveProvider(), get().aiSettings),
-      ]);
+      try {
+        const [outA, outB] = await Promise.all([
+          generateChatResponse(promptA.content, trimmed, 'ALPHA', provider, aiSettings),
+          generateChatResponse(promptB.content, trimmed, 'BETA', provider, aiSettings),
+        ]);
 
-      set({
-        versusOutputs: { promptA: outA, promptB: outB, userMessage: trimmed },
-        chatLoading: false,
-      });
+        set({
+          versusOutputs: { promptA: outA, promptB: outB, userMessage: trimmed },
+          chatLoading: false,
+        });
+      } catch (err) {
+        set({
+          chatLoading: false,
+          versusOutputs: null,
+          chatError: classifyProviderError(err, language, provider),
+        });
+      }
     }
   },
 
@@ -357,7 +512,7 @@ export const useStore = create<StoreState>((set, get) => ({
           protocol: input.protocol ?? 'openai-compatible',
           baseURL: input.baseURL ?? '',
           apiKey: input.apiKey ?? '',
-          enabled: input.enabled ?? true,
+          enabled: input.enabled ?? false,
           builtin: input.builtin ?? false,
           defaultBaseURL: input.defaultBaseURL ?? input.baseURL ?? '',
           manualModels: input.manualModels ?? ['default-model'],
@@ -365,18 +520,17 @@ export const useStore = create<StoreState>((set, get) => ({
           id: input.id,
         };
 
-    await db.providers.put(merged);
-
-    const { aiSettings } = get();
-    if (merged.enabled && !aiSettings.activeProviderId) {
-      const nextSettings: AiSettings = {
-        ...aiSettings,
-        activeProviderId: merged.id,
-        activeModelId: merged.manualModels[0] ?? aiSettings.activeModelId,
-        preferMock: false,
-      };
-      await db.aiSettings.put(nextSettings);
-      set({ aiSettings: nextSettings });
+    if (input.enabled === true) {
+      await db.providers.put({ ...merged, enabled: true });
+      await setExclusiveActiveProvider(get, set, merged.id, merged.manualModels[0]);
+    } else if (input.enabled === false) {
+      merged.enabled = false;
+      await db.providers.put(merged);
+      if (get().aiSettings.activeProviderId === merged.id) {
+        await setExclusiveActiveProvider(get, set, null);
+      }
+    } else {
+      await db.providers.put(merged);
     }
 
     await get().refreshFromDb();
@@ -389,34 +543,14 @@ export const useStore = create<StoreState>((set, get) => ({
 
     const { aiSettings } = get();
     if (aiSettings.activeProviderId === id) {
-      const remaining = await db.providers.filter((p) => p.enabled).first();
-      const nextSettings: AiSettings = {
-        ...aiSettings,
-        activeProviderId: remaining?.id ?? null,
-        activeModelId: remaining?.manualModels[0] ?? aiSettings.activeModelId,
-        preferMock: !remaining,
-      };
-      await db.aiSettings.put(nextSettings);
-      set({ aiSettings: nextSettings });
+      await setExclusiveActiveProvider(get, set, null);
     }
 
     await get().refreshFromDb();
   },
 
   setActiveModel: async (providerId, modelId) => {
-    const nextSettings: AiSettings = {
-      ...get().aiSettings,
-      activeProviderId: providerId,
-      activeModelId: modelId,
-      preferMock: false,
-    };
-    await db.aiSettings.put(nextSettings);
-    set({ aiSettings: nextSettings });
-  },
-
-  setPreferMock: async (preferMock) => {
-    const nextSettings: AiSettings = { ...get().aiSettings, preferMock };
-    await db.aiSettings.put(nextSettings);
-    set({ aiSettings: nextSettings });
+    await setExclusiveActiveProvider(get, set, providerId, modelId);
+    await get().refreshFromDb();
   },
 }));

@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Sparkles, CornerDownRight, PlusCircle, CheckCircle } from 'lucide-react';
+import { Sparkles, CornerDownRight, PlusCircle } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import SettingsBall from '../chat/SettingsBall';
 import SettingsPanel from './SettingsPanel';
@@ -14,6 +14,8 @@ import MetricsView from '../../views/MetricsView';
 import AddPromptPopup from '../prompts/AddPromptPopup';
 import OutputList from '../chat/OutputList';
 import FeedbackComposer from '../rate/FeedbackComposer';
+import BrandMark from './BrandMark';
+import DismissibleBanner from './DismissibleBanner';
 
 export default function ChatShell() {
   const t = useStore((state) => state.t());
@@ -24,6 +26,8 @@ export default function ChatShell() {
   const sendChatMessage = useStore((state) => state.sendChatMessage);
   const chatMessages = useStore((state) => state.chatMessages);
   const chatLoading = useStore((state) => state.chatLoading);
+  const chatError = useStore((state) => state.chatError);
+  const clearChatError = useStore((state) => state.clearChatError);
   const activePageIndex = useStore((state) => state.activePageIndex);
   const selectedPagesPromptId = useStore((state) => state.selectedPagesPromptId);
   const setSelectedPagesPromptId = useStore((state) => state.setSelectedPagesPromptId);
@@ -52,6 +56,7 @@ export default function ChatShell() {
 
     const text = inputText.trim();
     setInputText('');
+    clearChatError();
 
     if (activeMode === 'metrics' || (activeMode === 'pages' && prompts.length === 0)) {
       await sendChatMessage(text);
@@ -80,16 +85,11 @@ export default function ChatShell() {
         id="chatshell-container"
         className="rgb-border-container rgb-border-glow shadow-2xl w-full h-full min-h-0 flex flex-col overflow-hidden"
       >
-        <div className="rgb-border-inner h-full flex flex-col md:flex-row overflow-hidden">
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden p-5 sm:p-6 relative bg-[#0a0a0c]/85 backdrop-blur-3xl">
+        <div className="rgb-border-inner h-full relative flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col min-h-0 overflow-hidden p-5 sm:p-6 relative bg-[#0a0a0c]/85 backdrop-blur-3xl z-10">
             <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-4 shrink-0">
-              <div className="hidden sm:flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-lime-500 to-purple-600 flex items-center justify-center font-bold text-xs shadow-md border border-white/10">
-                  PR
-                </div>
-                <span className="font-display font-semibold text-sm tracking-tight text-white/90 uppercase">
-                  {t.title}
-                </span>
+              <div className="min-w-0 shrink">
+                <BrandMark size="sm" />
               </div>
 
               <div className="flex bg-white/5 p-1 rounded-full border border-white/10 shadow-lg">
@@ -113,11 +113,24 @@ export default function ChatShell() {
             </div>
 
             <div className="flex-1 flex flex-col justify-start min-h-0 py-4 overflow-y-auto">
+              {chatError && (
+                <DismissibleBanner
+                  variant="error"
+                  message={chatError.message}
+                  hint={chatError.hint}
+                  detail={chatError.detail}
+                  dismissLabel={t.errors.dismiss}
+                  onDismiss={clearChatError}
+                />
+              )}
+
               {bannerMessage && (
-                <div className="mb-4 flex items-center gap-2 rounded-xl border border-lime-500/20 bg-lime-500/10 p-3 text-lime-300 text-xs font-medium animate-fade-in shrink-0 shadow-lg">
-                  <CheckCircle className="w-4 h-4 text-lime-400 shrink-0" />
-                  <span>{bannerMessage}</span>
-                </div>
+                <DismissibleBanner
+                  variant="success"
+                  message={bannerMessage}
+                  dismissLabel={t.errors.dismiss}
+                  onDismiss={() => setBannerMessage(null)}
+                />
               )}
 
               {activeMode === 'pages' && <PagesView />}

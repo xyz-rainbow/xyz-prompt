@@ -4,7 +4,6 @@
  */
 
 import type { ProviderProfile, AiSettings } from '../types';
-import { isProfileConfigured } from '../lib/providers/provider-profile';
 import { callProviderChat } from './providerApi';
 
 export interface AiEvaluationResult {
@@ -162,63 +161,23 @@ export async function evaluatePromptWithAi(content: string): Promise<AiEvaluatio
 }
 
 /**
- * Simulates a model response using the system prompt and user message.
- * Uses configured provider when available; falls back to mock.
+ * Sends a chat completion to the configured provider.
+ * Throws on provider or configuration errors (no silent mock fallback).
  */
 export async function generateChatResponse(
   systemPrompt: string,
   userMessage: string,
-  label?: string,
-  provider?: ProviderProfile | null,
-  aiSettings?: AiSettings
+  label: string | undefined,
+  provider: ProviderProfile,
+  aiSettings: AiSettings
 ): Promise<string> {
-  const useReal =
-    provider &&
-    aiSettings &&
-    !aiSettings.preferMock &&
-    isProfileConfigured(provider) &&
-    aiSettings.activeModelId;
-
-  if (useReal) {
-    try {
-      const content = await callProviderChat({
-        profile: provider,
-        model: aiSettings.activeModelId,
-        systemPrompt,
-        userMessage,
-      });
-      return label ? `### ${label}\n\n${content}` : content;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Provider error';
-      return `### Provider error${label ? ` [${label}]` : ''}\n\n${msg}\n\n_Falling back to simulated response._\n\n${await mockChatResponse(systemPrompt, userMessage, label)}`;
-    }
-  }
-
-  return mockChatResponse(systemPrompt, userMessage, label);
-}
-
-async function mockChatResponse(
-  systemPrompt: string,
-  userMessage: string,
-  label?: string
-): Promise<string> {
-  await new Promise((resolve) => setTimeout(resolve, 1200));
-
-  const lower = systemPrompt.toLowerCase();
-  const tag = label ? ` [${label}]` : '';
-
-  if (lower.includes('editor') || lower.includes('novel')) {
-    return `### Simulated Response${tag}\n\n**Developmental Review**\n- *Pacing*: Strong hook; tension could build more before the reveal.\n- *Voice*: Prose fits the narrator's tone.\n\n**Suggestions:**\n1. Replace passive descriptors with sensory actions.\n2. Deepen inner monologue.\n3. Keep the cliffhanger focused.\n\n_User input processed:_ "${userMessage.slice(0, 80)}${userMessage.length > 80 ? '...' : ''}"`;
-  }
-  if (lower.includes('code') || lower.includes('typescript')) {
-    return `### Simulated Response${tag}\n\n**Code Review**\n\n\`\`\`typescript\n// Optimized snippet based on system prompt\nexport function processInput<T extends { id: string }>(items: T[]) {\n  return new Map(items.map((it, idx) => [it.id, idx]));\n}\n\`\`\`\n\n_Input:_ "${userMessage.slice(0, 60)}..."`;
-  }
-  if (lower.includes('marketing') || lower.includes('copy')) {
-    return `### Simulated Response${tag}\n\n**AIDA Copy Draft**\n\n- **ATTENTION**: Bold headline addressing the core pain point.\n- **INTEREST**: Solution intro tied to user context.\n- **DESIRE**: Benefits aligned with the request.\n- **ACTION**: Clear CTA.\n\n_Brief:_ "${userMessage.slice(0, 80)}..."`;
-  }
-
-  const persona = /\b(you are|act as)\b/i.test(systemPrompt) ? 'Expert assistant' : 'General assistant';
-  return `### Simulated Response${tag}\n\n**${persona}** processed your message following the active system prompt.\n\n1. **Alignment**: Core objectives understood.\n2. **Tone**: Professional and structured.\n3. **Output**: Formatted per prompt constraints.\n\n**Reply to:** "${userMessage}"`;
+  const content = await callProviderChat({
+    profile: provider,
+    model: aiSettings.activeModelId,
+    systemPrompt,
+    userMessage,
+  });
+  return label ? `### ${label}\n\n${content}` : content;
 }
 
 export async function generateAutofillFeedback(promptTitle: string, promptContent: string): Promise<string> {

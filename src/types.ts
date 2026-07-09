@@ -76,7 +76,6 @@ export interface AiSettings {
   id: 'default';
   activeProviderId: string | null;
   activeModelId: string;
-  preferMock: boolean;
 }
 
 // Translations type
@@ -173,6 +172,9 @@ export interface Translations {
     thinking: string;
     simulatedResponse: string;
   };
+  errors: {
+    dismiss: string;
+  };
   providers: {
     title: string;
     subtitle: string;
@@ -194,8 +196,6 @@ export interface Translations {
     name: string;
     protocol: string;
     activeModel: string;
-    preferMock: string;
-    preferMockDesc: string;
     saved: string;
     cleared: string;
     delete: string;
