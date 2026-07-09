@@ -91,7 +91,7 @@ export default function ChatShell() {
               </div>
             </div>
 
-            <div className="flex min-w-0 flex-1 flex-col justify-start min-h-0 py-4 overflow-y-auto overflow-x-hidden">
+            <div className="flex min-w-0 flex-1 flex-col justify-start min-h-0 overflow-y-auto overflow-x-hidden py-2 sm:py-3">
               {visibleChatError && (
                 <DismissibleBanner
                   variant="error"
@@ -108,7 +108,11 @@ export default function ChatShell() {
               {activeMode === 'metrics' && <MetricsView />}
             </div>
 
-            <div className="min-w-0 shrink-0 space-y-3 border-t border-white/5 pt-4 pb-1">
+            <div
+              className={`min-w-0 shrink-0 border-t border-white/5 pb-1 ${
+                activeMode === 'pages' ? 'space-y-2 pt-2' : 'space-y-3 pt-4'
+              }`}
+            >
               {isFeedbackMode && feedbackPromptId ? (
                 <FeedbackComposer
                   promptId={feedbackPromptId}
