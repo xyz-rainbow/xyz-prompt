@@ -167,7 +167,7 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
 
   const statusTone = profile.enabled ? 'text-lime-400' : 'text-rose-400';
 
-  const refreshButton = (iconOnly = false) => (
+  const refreshButton = (variant: 'icon' | 'inline' | 'block' = 'inline') => (
     <button
       type="button"
       onClick={(e) => {
@@ -176,12 +176,16 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
       }}
       disabled={busy || refreshing || !configured}
       className={`inline-flex items-center justify-center rounded-lg border border-lime-500/20 bg-lime-500/5 text-lime-400 hover:text-lime-300 hover:bg-lime-500/10 disabled:opacity-40 cursor-pointer shrink-0 ${
-        iconOnly ? 'h-7 w-7' : 'gap-1 px-2 py-1 text-[10px]'
+        variant === 'icon'
+          ? 'h-7 w-7'
+          : variant === 'block'
+            ? 'w-full gap-1.5 px-2 py-1.5 text-[10px] font-medium'
+            : 'gap-1 px-2 py-1 text-[10px]'
       }`}
       title={t.providers.refreshModels}
     >
       <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-      {!iconOnly && <span>{t.providers.refreshModels}</span>}
+      {variant !== 'icon' && <span>{t.providers.refreshModels}</span>}
     </button>
   );
 
@@ -235,7 +239,7 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
         </span>
 
         <div className="col-start-3 row-start-2 flex justify-end">
-          {!expanded && refreshButton(true)}
+          {!expanded && refreshButton('icon')}
         </div>
 
         <button
@@ -291,45 +295,44 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
             </div>
           )}
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{t.providers.baseUrl}</label>
-            <div className="flex gap-1.5">
-              <input
-                value={baseURL}
-                onChange={(e) => setBaseURL(e.target.value)}
-                placeholder="https://api.example.com/v1"
-                className="flex-1 h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-lime-500/40 focus:outline-none"
-                spellCheck={false}
-              />
-              {profile.defaultBaseURL && baseURL !== profile.defaultBaseURL && (
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="shrink-0 rounded-lg border border-white/10 px-2 text-[10px] text-slate-400 hover:text-lime-400 cursor-pointer"
-                >
-                  {t.providers.reset}
-                </button>
-              )}
-            </div>
+            <input
+              value={baseURL}
+              onChange={(e) => setBaseURL(e.target.value)}
+              placeholder="https://api.example.com/v1"
+              className="w-full h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-lime-500/40 focus:outline-none"
+              spellCheck={false}
+            />
+            {profile.defaultBaseURL && baseURL !== profile.defaultBaseURL && (
+              <button
+                type="button"
+                onClick={handleReset}
+                className="text-[10px] text-slate-400 hover:text-lime-400 cursor-pointer"
+              >
+                {t.providers.reset}
+              </button>
+            )}
+            {refreshButton('block')}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{t.providers.apiKey}</label>
+            <input
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={keyPlaceholder}
+              className="w-full h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-lime-500/40 focus:outline-none"
+              autoComplete="off"
+              spellCheck={false}
+            />
             <div className="flex gap-1.5">
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder={keyPlaceholder}
-                className="flex-1 h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-lime-500/40 focus:outline-none"
-                autoComplete="off"
-                spellCheck={false}
-              />
               <button
                 type="button"
                 onClick={handleSet}
                 disabled={busy || (!apiKey.trim() && baseURL === profile.baseURL)}
-                className="shrink-0 rounded-lg bg-lime-500/20 border border-lime-500/30 px-2.5 text-[10px] font-semibold text-lime-300 hover:bg-lime-500/30 disabled:opacity-40 cursor-pointer"
+                className="flex-1 rounded-lg bg-lime-500/20 border border-lime-500/30 px-2 py-1.5 text-[10px] font-semibold text-lime-300 hover:bg-lime-500/30 disabled:opacity-40 cursor-pointer"
               >
                 {t.providers.set}
               </button>
@@ -337,7 +340,7 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
                 type="button"
                 onClick={handleClear}
                 disabled={busy || !profile.apiKey}
-                className="shrink-0 rounded-lg border border-white/10 px-2.5 text-[10px] text-slate-400 hover:text-purple-300 cursor-pointer disabled:opacity-40"
+                className="flex-1 rounded-lg border border-white/10 px-2 py-1.5 text-[10px] text-slate-400 hover:text-purple-300 cursor-pointer disabled:opacity-40"
               >
                 {t.providers.clear}
               </button>
@@ -381,7 +384,7 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
             </div>
           )}
 
-          <div className="flex items-center justify-between gap-2">
+          <div className="space-y-1.5">
             <p className="text-[10px] text-slate-500">
               {refreshing
                 ? t.providers.refreshingModels
@@ -389,16 +392,13 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
                   ? `${modelCount} ${t.providers.modelsAvailable}`
                   : t.providers.noModels}
             </p>
-            <div className="flex items-center gap-2 shrink-0">
-              {refreshButton(false)}
-              <button
-                type="button"
-                onClick={() => setManualOpen((o) => !o)}
-                className="text-[10px] text-purple-400 hover:text-purple-300 underline-offset-2 hover:underline cursor-pointer"
-              >
-                {manualOpen ? t.providers.hideManualList : t.providers.manualList}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setManualOpen((o) => !o)}
+              className="w-full rounded-lg border border-purple-500/20 bg-purple-500/5 px-2 py-1.5 text-[10px] font-medium text-purple-400 hover:bg-purple-500/10 hover:text-purple-300 cursor-pointer"
+            >
+              {manualOpen ? t.providers.hideManualList : t.providers.manualList}
+            </button>
           </div>
 
           {manualOpen && (

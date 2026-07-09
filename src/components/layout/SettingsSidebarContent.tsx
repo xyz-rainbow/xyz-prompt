@@ -16,17 +16,19 @@ export default function SettingsSidebarContent() {
   return (
     <>
       <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-4 custom-scrollbar min-w-0 w-full">
-        <div className="space-y-2.5">
-          <h4 className="text-[10px] font-mono font-semibold tracking-widest text-slate-500 uppercase flex items-center gap-1.5">
-            <Globe className="w-3.5 h-3.5 text-fuchsia-400" />
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <h4 className="flex shrink-0 items-center gap-1 text-[9px] font-mono font-semibold uppercase tracking-widest text-slate-500">
+            <Globe className="h-3 w-3 text-fuchsia-400" />
             {t.language}
           </h4>
-          <div className="grid grid-cols-2 gap-2 rounded-lg bg-white/5 p-1 border border-white/10 min-w-0">
+          <div className="grid min-w-0 shrink-0 grid-cols-2 gap-0.5 rounded-md border border-white/10 bg-white/5 p-0.5">
             <button
               type="button"
               onClick={() => setLanguage('es')}
-              className={`py-1.5 text-xs font-medium rounded transition-all cursor-pointer ${
-                language === 'es' ? 'bg-white/10 text-fuchsia-400 font-semibold shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all cursor-pointer ${
+                language === 'es'
+                  ? 'bg-white/10 font-semibold text-fuchsia-400 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               ES
@@ -34,8 +36,10 @@ export default function SettingsSidebarContent() {
             <button
               type="button"
               onClick={() => setLanguage('en')}
-              className={`py-1.5 text-xs font-medium rounded transition-all cursor-pointer ${
-                language === 'en' ? 'bg-white/10 text-fuchsia-400 font-semibold shadow-sm' : 'text-slate-400 hover:text-slate-200'
+              className={`rounded px-2 py-0.5 text-[10px] font-medium transition-all cursor-pointer ${
+                language === 'en'
+                  ? 'bg-white/10 font-semibold text-fuchsia-400 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               EN
@@ -46,8 +50,8 @@ export default function SettingsSidebarContent() {
         <AiProvidersSection />
       </div>
 
-      <div className="w-full min-w-0 shrink-0 border-t border-b border-white/10 bg-white/[0.03] px-3 py-3">
-        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 space-y-1.5">
+      <div className="w-full min-w-0 shrink-0 border-t border-b border-white/10 bg-black/30 px-3 py-3">
+        <div className="rounded-lg border border-white/5 bg-black/25 p-3 space-y-1.5">
           <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
             <span>Database Engine</span>
             <span className="text-emerald-400 font-bold">INDEXEDDB</span>
