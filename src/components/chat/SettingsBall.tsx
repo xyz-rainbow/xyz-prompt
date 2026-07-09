@@ -15,6 +15,7 @@ export default function SettingsBall() {
   return (
     <button
       id="settings-ball-btn"
+      type="button"
       onClick={() => setSettingsOpen(!settingsOpen)}
       title={t.settings}
       className={`relative z-40 flex items-center justify-center w-10 h-10 rounded-full border border-white/20 bg-white/10 text-white shadow-xl backdrop-blur-md cursor-pointer transition-all duration-300 hover:bg-white/20 ${

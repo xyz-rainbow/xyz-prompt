@@ -200,7 +200,8 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
           <select
             value={isActiveProvider ? aiSettings.activeModelId : profile.manualModels[0]}
             onChange={(e) => setActiveModel(profile.id, e.target.value)}
-            className="w-full h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-purple-500/40 focus:outline-none cursor-pointer"
+            disabled={busy || !profile.enabled}
+            className="w-full h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-purple-500/40 focus:outline-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {profile.manualModels.map((m) => (
               <option key={m} value={m} className="bg-slate-900">
