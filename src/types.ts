@@ -110,6 +110,8 @@ export interface Translations {
     placeholderFeedback: string;
     submitFeedback: string;
     feedbackSubmitted: string;
+    deletePrompt: string;
+    deletePromptConfirm: string;
   };
   versusMode: {
     title: string;

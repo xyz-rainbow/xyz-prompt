@@ -375,16 +375,36 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   addVote: async (promptId, type, mode) => {
-    const id = crypto.randomUUID();
-    const newVote: Vote = {
-      id,
-      promptId,
-      type,
-      mode,
-      createdAt: new Date(),
-    };
+    const matching = (await db.votes.where('promptId').equals(promptId).toArray()).filter(
+      (vote) => vote.mode === mode,
+    );
 
-    await db.votes.add(newVote);
+    if (matching.length > 1) {
+      const sorted = [...matching].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+      await Promise.all(sorted.slice(1).map((vote) => db.votes.delete(vote.id)));
+    }
+
+    const existing = matching[0];
+
+    if (existing) {
+      if (existing.type === type) {
+        await db.votes.delete(existing.id);
+      } else {
+        await db.votes.update(existing.id, { type, createdAt: new Date() });
+      }
+    } else {
+      const newVote: Vote = {
+        id: crypto.randomUUID(),
+        promptId,
+        type,
+        mode,
+        createdAt: new Date(),
+      };
+      await db.votes.add(newVote);
+    }
+
     await get().refreshFromDb();
   },
 
@@ -405,12 +425,13 @@ export const useStore = create<StoreState>((set, get) => ({
   },
 
   deletePrompt: async (id) => {
+    const { activePageIndex, selectedPagesPromptId, prompts, chatMessages } = get();
+    const deleteIndex = prompts.findIndex((p) => p.id === id);
+
     await db.prompts.delete(id);
-    // Delete associated votes & feedbacks
     await db.votes.where('promptId').equals(id).delete();
     await db.feedbacks.where('promptId').equals(id).delete();
-    
-    // Re-adjust numbers of remaining prompts
+
     const remaining = await db.prompts.orderBy('createdAt').toArray();
     await db.prompts.clear();
     for (let i = 0; i < remaining.length; i++) {
@@ -419,6 +440,22 @@ export const useStore = create<StoreState>((set, get) => ({
     }
 
     await get().refreshFromDb();
+
+    const nextPrompts = get().prompts;
+    let nextPageIndex = activePageIndex;
+    if (nextPrompts.length === 0) {
+      nextPageIndex = 0;
+    } else if (deleteIndex !== -1 && activePageIndex >= nextPrompts.length) {
+      nextPageIndex = nextPrompts.length - 1;
+    } else if (deleteIndex !== -1 && deleteIndex < activePageIndex) {
+      nextPageIndex = activePageIndex - 1;
+    }
+
+    set({
+      activePageIndex: nextPageIndex,
+      selectedPagesPromptId: selectedPagesPromptId === id ? null : selectedPagesPromptId,
+      chatMessages: chatMessages.filter((m) => m.promptId !== id),
+    });
   },
 
   clearDatabase: async () => {
@@ -472,11 +509,8 @@ export const useStore = create<StoreState>((set, get) => ({
     const { activeMode, prompts, activePageIndex, versusPrompts, language, aiSettings } = get();
     const provider = get().getActiveProvider();
 
-    if (activeMode === 'metrics' || (activeMode === 'pages' && prompts.length === 0)) {
-      const words = trimmed.split(/\s+/);
-      const titleSnippet = words.slice(0, 4).join(' ') + (words.length > 4 ? '...' : '');
-      const defaultTitle = language === 'es' ? `Borrador: ${titleSnippet}` : `Draft: ${titleSnippet}`;
-      await get().addPrompt(defaultTitle, trimmed, 'chat_input');
+    if (activeMode === 'metrics' || prompts.length === 0) {
+      set({ chatError: buildChatError('no_prompt', language), chatLoading: false });
       return;
     }
 

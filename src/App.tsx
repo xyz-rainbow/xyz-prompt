@@ -129,7 +129,7 @@ export default function App() {
       <main
         id="app-main-content"
         style={sidebarOpen && isMdUp ? { paddingLeft: settingsSidebarWidth } : undefined}
-        className={`flex-grow min-h-dvh flex flex-col items-center px-4 sm:px-6 md:px-10 py-6 relative z-10 ${
+        className={`flex-grow min-h-dvh min-w-0 flex flex-col items-center px-4 sm:px-6 md:px-10 py-6 relative z-10 ${
           sidebarOpen ? 'pointer-events-none' : ''
         } ${
           settingsSidebarResizing
@@ -137,7 +137,7 @@ export default function App() {
             : 'transition-all duration-300 ease-out'
         }`}
       >
-        <div className="w-full max-w-4xl flex-1 flex flex-col min-h-0 max-h-[calc(100dvh-3rem)]">
+        <div className="w-full min-w-0 max-w-4xl flex-1 flex flex-col min-h-0 max-h-[calc(100dvh-3rem)]">
           <ChatShell />
         </div>
       </main>

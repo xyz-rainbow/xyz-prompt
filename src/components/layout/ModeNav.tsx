@@ -61,7 +61,7 @@ export default function ModeNav() {
   };
 
   const pillClass = (active: boolean) =>
-    `px-4 sm:px-5 py-1.5 text-xs font-semibold rounded-full tracking-wide transition-all cursor-pointer ${
+    `min-w-0 shrink px-2 py-1.5 text-xs font-semibold rounded-full tracking-wide transition-all cursor-pointer min-[540px]:px-4 sm:px-5 ${
       active
         ? 'bg-white/10 text-lime-300 shadow-lg border border-white/10'
         : 'text-white/50 hover:text-white'
@@ -75,28 +75,37 @@ export default function ModeNav() {
     }`;
 
   return (
-    <div ref={navRef} className="relative flex bg-white/5 p-1 rounded-full border border-white/10 shadow-lg">
+    <div
+      ref={navRef}
+      className="relative flex min-w-0 max-w-full shrink bg-white/5 p-0.5 sm:p-1 rounded-full border border-white/10 shadow-lg"
+    >
       <button
         type="button"
         onClick={handleDashboardClick}
-        className={`${pillClass(isDashboardActive)} flex items-center gap-1.5`}
+        title={t.modes.dashboard}
+        className={`${pillClass(isDashboardActive)} flex items-center gap-1 sm:gap-1.5`}
         aria-expanded={dashboardOpen}
         aria-haspopup="true"
       >
-        <LayoutDashboard className="w-3.5 h-3.5 shrink-0 opacity-80" />
-        {t.modes.dashboard}
+        <LayoutDashboard className="h-3.5 w-3.5 shrink-0 opacity-80" />
+        <span className="hidden truncate min-[540px]:inline">{t.modes.dashboard}</span>
         <ChevronDown
-          className={`w-3 h-3 shrink-0 opacity-60 transition-transform ${dashboardOpen ? 'rotate-180' : ''}`}
+          className={`h-3 w-3 shrink-0 opacity-60 transition-transform ${dashboardOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
-      <button type="button" onClick={handleControlClick} className={`${pillClass(isControlActive)} flex items-center gap-1.5`}>
-        <SlidersHorizontal className="w-3.5 h-3.5 shrink-0 opacity-80" />
-        {t.modes.control}
+      <button
+        type="button"
+        onClick={handleControlClick}
+        title={t.modes.control}
+        className={`${pillClass(isControlActive)} flex items-center gap-1 sm:gap-1.5`}
+      >
+        <SlidersHorizontal className="h-3.5 w-3.5 shrink-0 opacity-80" />
+        <span className="hidden truncate min-[540px]:inline">{t.modes.control}</span>
       </button>
 
       {dashboardOpen && (
-        <div className="absolute top-[calc(100%+0.5rem)] left-0 z-50 w-[220px] rounded-2xl border border-white/10 bg-[#12121a]/95 p-2 shadow-2xl backdrop-blur-xl">
+        <div className="absolute top-[calc(100%+0.5rem)] left-1/2 z-50 w-[min(220px,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl border border-white/10 bg-[#12121a]/95 p-2 shadow-2xl backdrop-blur-xl min-[540px]:left-0 min-[540px]:translate-x-0">
           <div className="grid grid-cols-2 grid-rows-2 gap-2">
             {dashboardTiles.map(({ mode, icon: Icon }) => (
               <button
@@ -105,14 +114,14 @@ export default function ModeNav() {
                 onClick={() => selectDashboardMode(mode)}
                 className={tileClass(mode)}
               >
-                <Icon className="w-4 h-4 shrink-0 opacity-80" />
+                <Icon className="h-4 w-4 shrink-0 opacity-80" />
                 <span className="text-center leading-tight">{t.modes[mode]}</span>
               </button>
             ))}
             {Array.from({ length: 2 }).map((_, index) => (
               <div
                 key={`placeholder-${index}`}
-                className="rounded-xl border border-dashed border-white/5 bg-white/[0.01] min-h-[72px]"
+                className="min-h-[72px] rounded-xl border border-dashed border-white/5 bg-white/[0.01]"
                 aria-hidden
               />
             ))}

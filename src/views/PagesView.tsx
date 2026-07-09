@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, Copy, Check, Inbox } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Copy, Check, Inbox, Trash2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import VoteBar from '../components/rate/VoteBar';
 
@@ -15,17 +15,19 @@ export default function PagesView() {
   const setActivePageIndex = useStore((state) => state.setActivePageIndex);
   const selectedPagesPromptId = useStore((state) => state.selectedPagesPromptId);
   const setSelectedPagesPromptId = useStore((state) => state.setSelectedPagesPromptId);
+  const deletePrompt = useStore((state) => state.deletePrompt);
+  const language = useStore((state) => state.language);
 
   const [copied, setCopied] = React.useState(false);
 
   if (prompts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[350px] animate-fade-in">
+      <div className="flex flex-col items-center justify-center min-h-[350px] min-w-0 p-4 text-center animate-fade-in sm:p-8">
         <div className="rounded-full bg-white/5 p-4 border border-white/10 mb-4 shadow-xl backdrop-blur-md">
           <Inbox className="w-8 h-8 text-lime-400 animate-bounce" />
         </div>
         <h3 className="font-display text-lg font-bold text-slate-200">{t.pagesMode.noPrompts}</h3>
-        <p className="text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
+        <p className="mt-2 max-w-md text-xs leading-relaxed text-slate-400 break-words">
           {t.pagesMode.noPromptsDesc}
         </p>
       </div>
@@ -61,6 +63,12 @@ export default function PagesView() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!activePrompt) return;
+    if (!confirm(t.pagesMode.deletePromptConfirm)) return;
+    await deletePrompt(activePrompt.id);
+  };
+
   return (
     <div className="relative space-y-6 w-full max-w-2xl mx-auto py-2 animate-fade-in">
       <div className="relative group">
@@ -70,7 +78,7 @@ export default function PagesView() {
           className={`absolute -left-12 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/15 disabled:opacity-0 disabled:pointer-events-none transition-all shadow-md z-10 cursor-pointer ${
             activePageIndex > 0 ? 'hover:scale-110 active:scale-95' : ''
           }`}
-          title={t.language === 'es' ? 'Anterior' : 'Previous'}
+          title={language === 'es' ? 'Anterior' : 'Previous'}
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
@@ -88,9 +96,18 @@ export default function PagesView() {
 
             <div className="flex items-center gap-2">
               <button
+                type="button"
+                onClick={handleDelete}
+                title={t.pagesMode.deletePrompt}
+                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-rose-500/10 hover:text-rose-400 cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
                 onClick={handleCopy}
-                title="Copy prompt text"
-                className="p-1.5 rounded-lg text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
+                title={language === 'es' ? 'Copiar prompt' : 'Copy prompt text'}
+                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-white/5 hover:text-white cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-lime-400" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
@@ -110,7 +127,7 @@ export default function PagesView() {
           className={`absolute -right-12 top-1/2 -translate-y-1/2 flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/15 disabled:opacity-0 disabled:pointer-events-none transition-all shadow-md z-10 cursor-pointer ${
             activePageIndex < prompts.length - 1 ? 'hover:scale-110 active:scale-95' : ''
           }`}
-          title={t.language === 'es' ? 'Siguiente' : 'Next'}
+          title={language === 'es' ? 'Siguiente' : 'Next'}
         >
           <ChevronRight className="w-5 h-5" />
         </button>

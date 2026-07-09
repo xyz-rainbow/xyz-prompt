@@ -35,7 +35,9 @@ export const en: Translations = {
     selected: "Prompt Selected",
     placeholderFeedback: "Write your custom feedback for this prompt...",
     submitFeedback: "Save Feedback",
-    feedbackSubmitted: "Feedback saved successfully!"
+    feedbackSubmitted: "Feedback saved successfully!",
+    deletePrompt: "Delete prompt",
+    deletePromptConfirm: "Delete this prompt permanently?"
   },
   versusMode: {
     title: "A/B Versus Mode",
@@ -96,7 +98,7 @@ export const en: Translations = {
   chat: {
     placeholderPages: "Send a message to test this system prompt...",
     placeholderVersus: "Send a message to compare both prompts...",
-    placeholderMetrics: "Type a full prompt to save it quickly...",
+    placeholderMetrics: "Add a prompt first to test messages in Pages...",
     send: "Send",
     thinking: "Generating response...",
     simulatedResponse: "Simulated Response",
@@ -174,7 +176,9 @@ export const es: Translations = {
     selected: "Prompt Seleccionado",
     placeholderFeedback: "Escribe tu feedback personalizado para este prompt...",
     submitFeedback: "Guardar Feedback",
-    feedbackSubmitted: "¡Feedback guardado con éxito!"
+    feedbackSubmitted: "¡Feedback guardado con éxito!",
+    deletePrompt: "Eliminar prompt",
+    deletePromptConfirm: "¿Eliminar este prompt de forma permanente?"
   },
   versusMode: {
     title: "Modo Versus A/B",
@@ -235,7 +239,7 @@ export const es: Translations = {
   chat: {
     placeholderPages: "Envía un mensaje para probar este system prompt...",
     placeholderVersus: "Envía un mensaje para comparar ambos prompts...",
-    placeholderMetrics: "Escribe un prompt completo para guardarlo rápidamente...",
+    placeholderMetrics: "Añade un prompt primero para probar mensajes en Páginas...",
     send: "Enviar",
     thinking: "Generando respuesta...",
     simulatedResponse: "Respuesta simulada",

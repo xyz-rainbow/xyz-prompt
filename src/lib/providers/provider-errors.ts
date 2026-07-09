@@ -6,6 +6,7 @@ import type { AiSettings, ProviderProfile } from '../../types';
 import { isLocalBaseURL, isProfileConfigured } from './provider-profile';
 
 export type ProviderErrorCode =
+  | 'no_prompt'
   | 'no_provider'
   | 'provider_disabled'
   | 'provider_not_configured'
@@ -48,6 +49,10 @@ export class ProviderRequestError extends Error {
 type ErrorCopy = Record<ProviderErrorCode, { message: string; hint: string }>;
 
 const ERROR_COPY_EN: ErrorCopy = {
+  no_prompt: {
+    message: 'No system prompt is available to test.',
+    hint: 'Add a prompt from the menu or Settings before sending a message.',
+  },
   no_provider: {
     message: 'No AI provider is active.',
     hint: 'Open Settings, enable a provider, set its API key or local URL, and pick an active model.',
@@ -127,6 +132,10 @@ const ERROR_COPY_EN: ErrorCopy = {
 };
 
 const ERROR_COPY_ES: ErrorCopy = {
+  no_prompt: {
+    message: 'No hay ningún prompt configurado para probar.',
+    hint: 'Añade un prompt desde el menú o Ajustes antes de enviar un mensaje.',
+  },
   no_provider: {
     message: 'No hay ningún proveedor de IA activo.',
     hint: 'Abre Ajustes, activa un proveedor, configura API key o URL local y elige un modelo activo.',

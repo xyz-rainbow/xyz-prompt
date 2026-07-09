@@ -20,7 +20,6 @@ import ModeNav from './ModeNav';
 
 export default function ChatShell() {
   const t = useStore((state) => state.t());
-  const language = useStore((state) => state.language);
   const activeMode = useStore((state) => state.activeMode);
   const prompts = useStore((state) => state.prompts);
   const sendChatMessage = useStore((state) => state.sendChatMessage);
@@ -36,7 +35,6 @@ export default function ChatShell() {
 
   const [addDirectOpen, setAddDirectOpen] = useState(false);
   const [inputText, setInputText] = useState('');
-  const [bannerMessage, setBannerMessage] = useState<string | null>(null);
 
   const activePrompt = prompts[activePageIndex];
   const pageMessages = activePrompt
@@ -55,21 +53,12 @@ export default function ChatShell() {
     if (!inputText.trim() || chatLoading) return;
 
     const text = inputText.trim();
-    setInputText('');
     clearChatError();
 
-    if (activeMode === 'metrics' || (activeMode === 'pages' && prompts.length === 0)) {
-      await sendChatMessage(text);
-      const successMsg =
-        language === 'es'
-          ? '¡Prompt guardado! Ve a Páginas o Versus para calificarlo.'
-          : 'Prompt saved! Go to Pages or Versus to rate it.';
-      setBannerMessage(successMsg);
-      setTimeout(() => setBannerMessage(null), 5000);
-      return;
-    }
-
     await sendChatMessage(text);
+    if (!useStore.getState().chatError) {
+      setInputText('');
+    }
   };
 
   const inputPlaceholder =
@@ -83,21 +72,25 @@ export default function ChatShell() {
     <>
       <div
         id="chatshell-container"
-        className="rgb-border-container rgb-border-glow shadow-2xl w-full h-full min-h-0 flex flex-col overflow-hidden"
+        className="rgb-border-container rgb-border-glow shadow-2xl w-full min-w-0 h-full min-h-0 flex flex-col overflow-hidden"
       >
         <div className="rgb-border-inner h-full relative flex flex-col overflow-hidden">
-          <div className="flex-1 flex flex-col min-h-0 overflow-hidden p-5 sm:p-6 relative bg-[#0a0a0c]/85 backdrop-blur-3xl z-10">
-            <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-4 shrink-0">
-              <div className="min-w-0 shrink">
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden p-4 sm:p-6 relative bg-[#0a0a0c]/85 backdrop-blur-3xl z-10">
+            <div className="flex min-w-0 items-center gap-2 border-b border-white/5 pb-4 shrink-0 overflow-hidden sm:gap-3">
+              <div className="min-w-0 shrink overflow-hidden">
                 <BrandMark size="sm" />
               </div>
 
-              <ModeNav />
+              <div className="flex min-w-0 flex-1 justify-center overflow-hidden px-0.5">
+                <ModeNav />
+              </div>
 
-              <NavPanelToggle />
+              <div className="shrink-0">
+                <NavPanelToggle />
+              </div>
             </div>
 
-            <div className="flex-1 flex flex-col justify-start min-h-0 py-4 overflow-y-auto">
+            <div className="flex min-w-0 flex-1 flex-col justify-start min-h-0 py-4 overflow-y-auto overflow-x-hidden">
               {chatError && (
                 <DismissibleBanner
                   variant="error"
@@ -109,21 +102,12 @@ export default function ChatShell() {
                 />
               )}
 
-              {bannerMessage && (
-                <DismissibleBanner
-                  variant="success"
-                  message={bannerMessage}
-                  dismissLabel={t.errors.dismiss}
-                  onDismiss={() => setBannerMessage(null)}
-                />
-              )}
-
               {activeMode === 'pages' && <PagesView />}
               {activeMode === 'versus' && <VersusView />}
               {activeMode === 'metrics' && <MetricsView />}
             </div>
 
-            <div className="border-t border-white/5 pt-4 pb-1 space-y-3 shrink-0">
+            <div className="min-w-0 shrink-0 space-y-3 border-t border-white/5 pt-4 pb-1">
               {activeMode === 'pages' && (
                 <OutputList messages={pageMessages} loading={chatLoading} />
               )}
@@ -138,7 +122,7 @@ export default function ChatShell() {
                   }}
                 />
               ) : (
-                <form onSubmit={handleSend} className="flex items-center gap-3 w-full">
+                <form onSubmit={handleSend} className="flex min-w-0 w-full items-center gap-2 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setAddDirectOpen(true)}
@@ -148,7 +132,7 @@ export default function ChatShell() {
                     <PlusCircle className="w-5 h-5" />
                   </button>
 
-                  <div className="relative flex-grow">
+                  <div className="relative min-w-0 flex-1">
                     <input
                       type="text"
                       value={inputText}
@@ -173,9 +157,9 @@ export default function ChatShell() {
                 </form>
               )}
 
-              <div className="flex justify-between items-center text-[9px] text-white/30 font-mono tracking-wider">
-                <span>LOCAL CACHE: READY (PROMPTS: {prompts.length})</span>
-                <span>{t.toggleSettingsShortcut}</span>
+              <div className="flex min-w-0 items-center justify-between gap-2 text-[9px] text-white/30 font-mono tracking-wider">
+                <span className="min-w-0 truncate">LOCAL CACHE: READY (PROMPTS: {prompts.length})</span>
+                <span className="hidden shrink-0 sm:inline">{t.toggleSettingsShortcut}</span>
               </div>
             </div>
           </div>
