@@ -113,6 +113,10 @@ export default function ChatShell() {
                 <FeedbackComposer
                   promptId={feedbackPromptId}
                   mode={activeMode === 'versus' ? 'versus' : 'pages'}
+                  onClose={() => {
+                    setSelectedPagesPromptId(null);
+                    setVersusSelectedId(null);
+                  }}
                   onCompleted={() => {
                     setSelectedPagesPromptId(null);
                     setVersusSelectedId(null);
