@@ -38,6 +38,7 @@ export function isBuiltinId(id: string): boolean {
 }
 
 export function profileFromPreset(preset: ProviderPreset): ProviderProfile {
+  const isLocalPreset = preset.protocol === 'ollama' || preset.id === 'lmstudio';
   return {
     id: preset.id,
     label: preset.label,
@@ -47,7 +48,7 @@ export function profileFromPreset(preset: ProviderPreset): ProviderProfile {
     enabled: false,
     builtin: true,
     defaultBaseURL: preset.defaultBaseURL,
-    manualModels: [preset.defaultModel],
+    manualModels: isLocalPreset ? [] : [preset.defaultModel],
   };
 }
 

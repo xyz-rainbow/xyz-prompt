@@ -196,6 +196,11 @@ export interface Translations {
     name: string;
     protocol: string;
     activeModel: string;
+    refreshModels: string;
+    refreshingModels: string;
+    modelsFetched: string;
+    modelsFetchFailed: string;
+    selectModelPlaceholder: string;
     saved: string;
     cleared: string;
     delete: string;

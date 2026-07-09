@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useEffect, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { ProviderProfile } from '../../types';
-import { deriveStatus, maskApiKey } from '../../lib/providers/provider-profile';
+import { deriveStatus, isProfileConfigured, maskApiKey } from '../../lib/providers/provider-profile';
 import { useStore } from '../../store/useStore';
 
 interface ProviderConfigCardProps {
@@ -20,12 +20,21 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
   const deleteProvider = useStore((state) => state.deleteProvider);
   const aiSettings = useStore((state) => state.aiSettings);
   const setActiveModel = useStore((state) => state.setActiveModel);
+  const refreshProviderModels = useStore((state) => state.refreshProviderModels);
 
   const [baseURL, setBaseURL] = useState(profile.baseURL);
   const [apiKey, setApiKey] = useState('');
   const [busy, setBusy] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualText, setManualText] = useState(profile.manualModels.join('\n'));
+  const [fetchNotice, setFetchNotice] = useState<{
+    type: 'success' | 'error';
+    message: string;
+    hint?: string;
+  } | null>(null);
+
+  const autoRefreshKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     setBaseURL(profile.baseURL);
@@ -35,11 +44,49 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
     setManualText(profile.manualModels.join('\n'));
   }, [profile.manualModels]);
 
+  const configured = isProfileConfigured(profile);
   const status = deriveStatus(profile);
   const modelCount = profile.manualModels.length;
   const keyPlaceholder = profile.apiKey ? maskApiKey(profile.apiKey) : (language === 'es' ? 'No configurada' : 'Not set');
-
   const isActiveProvider = aiSettings.activeProviderId === profile.id;
+
+  const runRefresh = useCallback(async () => {
+    if (!isProfileConfigured(profile)) return;
+
+    setRefreshing(true);
+    setFetchNotice(null);
+    try {
+      const result = await refreshProviderModels(profile.id);
+      if (result.success) {
+        setFetchNotice({
+          type: 'success',
+          message: t.providers.modelsFetched.replace('{{count}}', String(result.models?.length ?? 0)),
+        });
+      } else if (result.error) {
+        setFetchNotice({
+          type: 'error',
+          message: result.error.message,
+          hint: result.error.hint,
+        });
+      } else {
+        setFetchNotice({
+          type: 'error',
+          message: t.providers.modelsFetchFailed,
+        });
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }, [profile, refreshProviderModels, t.providers.modelsFetched, t.providers.modelsFetchFailed]);
+
+  useEffect(() => {
+    if (!profile.enabled || !configured) return;
+
+    const key = `${profile.id}:${profile.baseURL}:${profile.apiKey ? 'key' : 'no-key'}`;
+    if (autoRefreshKeyRef.current === key) return;
+    autoRefreshKeyRef.current = key;
+    void runRefresh();
+  }, [profile.enabled, profile.id, profile.baseURL, profile.apiKey, configured, runRefresh]);
 
   const handleSet = async () => {
     setBusy(true);
@@ -82,6 +129,7 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
       const models = manualText.split('\n').map((s) => s.trim()).filter(Boolean);
       await upsertProvider({ id: profile.id, manualModels: models });
       setManualOpen(false);
+      setFetchNotice(null);
     } finally {
       setBusy(false);
     }
@@ -96,6 +144,11 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
       setBusy(false);
     }
   };
+
+  const selectValue =
+    isActiveProvider && profile.manualModels.includes(aiSettings.activeModelId)
+      ? aiSettings.activeModelId
+      : profile.manualModels[0] ?? '';
 
   return (
     <div className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.02] p-3">
@@ -194,37 +247,69 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
         </div>
       </div>
 
-      {profile.manualModels.length > 0 && (
-        <div className="space-y-1">
-          <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{t.providers.activeModel}</label>
-          <select
-            value={isActiveProvider ? aiSettings.activeModelId : profile.manualModels[0]}
-            onChange={(e) => setActiveModel(profile.id, e.target.value)}
-            disabled={busy || !profile.enabled}
-            className="w-full h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-purple-500/40 focus:outline-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {profile.manualModels.map((m) => (
+      <div className="space-y-1">
+        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-500">{t.providers.activeModel}</label>
+        <select
+          value={selectValue}
+          onChange={(e) => {
+            if (e.target.value) setActiveModel(profile.id, e.target.value);
+          }}
+          disabled={busy || refreshing || !profile.enabled || profile.manualModels.length === 0}
+          className="w-full h-8 rounded-lg border border-white/10 bg-[#050507]/50 px-2 text-[11px] text-slate-200 focus:border-purple-500/40 focus:outline-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          {profile.manualModels.length === 0 ? (
+            <option value="" disabled className="bg-slate-900">
+              {t.providers.selectModelPlaceholder}
+            </option>
+          ) : (
+            profile.manualModels.map((m) => (
               <option key={m} value={m} className="bg-slate-900">
                 {m}
               </option>
-            ))}
-          </select>
+            ))
+          )}
+        </select>
+      </div>
+
+      {fetchNotice && (
+        <div
+          className={`rounded-lg border px-2.5 py-2 text-[10px] leading-relaxed ${
+            fetchNotice.type === 'success'
+              ? 'border-lime-500/25 bg-lime-500/10 text-lime-200'
+              : 'border-rose-500/25 bg-rose-500/10 text-rose-100'
+          }`}
+        >
+          <p className="font-medium">{fetchNotice.message}</p>
+          {fetchNotice.hint && <p className="opacity-80 mt-0.5">{fetchNotice.hint}</p>}
         </div>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <p className="text-[10px] text-slate-500">
-          {status === 'online'
-            ? `${modelCount} ${t.providers.modelsAvailable}`
-            : t.providers.noModels}
+          {refreshing
+            ? t.providers.refreshingModels
+            : modelCount > 0
+              ? `${modelCount} ${t.providers.modelsAvailable}`
+              : t.providers.noModels}
         </p>
-        <button
-          type="button"
-          onClick={() => setManualOpen((o) => !o)}
-          className="text-[10px] text-purple-400 hover:text-purple-300 underline-offset-2 hover:underline cursor-pointer"
-        >
-          {manualOpen ? t.providers.hideManualList : t.providers.manualList}
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => void runRefresh()}
+            disabled={busy || refreshing || !configured}
+            className="inline-flex items-center gap-1 text-[10px] text-lime-400 hover:text-lime-300 disabled:opacity-40 cursor-pointer"
+          >
+            <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
+            {t.providers.refreshModels}
+          </button>
+          <button
+            type="button"
+            onClick={() => setManualOpen((o) => !o)}
+            className="text-[10px] text-purple-400 hover:text-purple-300 underline-offset-2 hover:underline cursor-pointer"
+          >
+            {manualOpen ? t.providers.hideManualList : t.providers.manualList}
+          </button>
+        </div>
       </div>
 
       {manualOpen && (
@@ -232,7 +317,7 @@ export default function ProviderConfigCard({ profile }: ProviderConfigCardProps)
           <textarea
             value={manualText}
             onChange={(e) => setManualText(e.target.value)}
-            placeholder={'gpt-4o-mini\nllama3.2'}
+            placeholder={'gpt-4o-mini\nllama3.2:latest'}
             rows={3}
             className="w-full rounded-lg border border-white/10 bg-[#050507]/50 p-2 text-[11px] font-mono text-slate-200 focus:border-purple-500/40 focus:outline-none resize-y"
             spellCheck={false}
